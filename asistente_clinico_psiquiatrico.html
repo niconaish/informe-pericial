@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Asistente Clínico Psiquiátrico</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --bg:#f4f3f0;--surface:#fff;--surface2:#f9f8f6;--border:#e0ddd8;--border2:#d0cdc8;
+    --text:#1a1916;--text2:#5a5753;--text3:#9a9693;
+    --accent:#1a5c3a;--accent-light:#e8f5ee;--accent-dark:#124228;
+    --blue:#1a2e5c;--blue-bg:#e8ecf5;--blue-border:#c0ccdf;
+    --amber:#5c3a00;--amber-bg:#fdf3e0;--amber-border:#e0c878;
+    --red:#5c1a1a;--red-bg:#f5e8e8;
+    --green:#1a5c3a;--green-bg:#e8f5ee;
+    --font:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;}
+  .shell{display:grid;grid-template-columns:270px 1fr;min-height:100vh;}
+
+  /* SIDEBAR */
+  .sidebar{background:var(--accent);color:#fff;padding:24px 18px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+  .sb-logo{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:5px;}
+  .sb-title{font-size:15px;font-weight:600;color:#fff;line-height:1.3;margin-bottom:3px;}
+  .sb-sub{font-size:11px;color:rgba(255,255,255,.5);margin-bottom:24px;line-height:1.5;}
+  .sb-section{margin-bottom:18px;}
+  .sb-label{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:7px;}
+  .api-wrap{position:relative;}
+  .api-input{width:100%;padding:7px 32px 7px 9px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:var(--radius);font-family:var(--mono);font-size:11px;color:#fff;}
+  .api-input::placeholder{color:rgba(255,255,255,.3);}
+  .api-input:focus{outline:none;border-color:rgba(255,255,255,.45);}
+  .api-eye{position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,.45);font-size:12px;}
+  .api-hint{font-size:10px;color:rgba(255,255,255,.3);margin-top:5px;line-height:1.55;}
+  .api-hint a{color:rgba(255,255,255,.55);}
+  .sb-steps{list-style:none;}
+  .sb-steps li{font-size:11px;color:rgba(255,255,255,.55);margin-bottom:7px;padding-left:20px;position:relative;line-height:1.45;}
+  .sb-steps li::before{content:attr(data-n);position:absolute;left:0;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.3);}
+  .sb-steps li a{color:rgba(255,255,255,.65);}
+  .sb-footer{margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,.1);font-size:10px;color:rgba(255,255,255,.28);line-height:1.6;}
+  .sb-warning{background:rgba(255,200,0,.12);border:1px solid rgba(255,200,0,.25);border-radius:var(--radius);padding:8px 10px;font-size:10px;color:rgba(255,255,200,.7);line-height:1.55;margin-top:12px;}
+
+  /* MAIN */
+  .main{padding:28px 32px;max-width:820px;}
+  .sec-title{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;}
+  .field{display:flex;flex-direction:column;gap:4px;}
+  .field label{font-size:11px;font-weight:500;color:var(--text2);}
+  input[type=text],select,textarea{font-family:var(--font);font-size:13px;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 9px;width:100%;transition:border-color .15s;}
+  input[type=text]:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);background:#fff;}
+  textarea{resize:vertical;min-height:120px;line-height:1.6;}
+
+  /* DIAGNÓSTICOS */
+  .diag-list{display:flex;flex-direction:column;gap:9px;margin-bottom:11px;}
+  .diag-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;}
+  .diag-head{display:flex;align-items:center;gap:7px;margin-bottom:10px;}
+  .diag-num{font-family:var(--mono);font-size:10px;background:var(--accent);color:#fff;border-radius:3px;padding:2px 7px;}
+  .diag-rm{margin-left:auto;font-size:11px;padding:3px 9px;background:transparent;border:1px solid var(--border2);border-radius:var(--radius);cursor:pointer;color:var(--text2);font-family:var(--font);}
+  .diag-rm:hover{background:var(--red-bg);color:var(--red);}
+  .norm-hint{font-size:11px;color:var(--text2);background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:var(--radius);padding:7px 9px;margin-top:7px;line-height:1.5;display:none;}
+  .norm-hint.on{display:block;}
+  .norm-hint strong{color:var(--blue);}
+  .add-btn{font-size:12px;font-family:var(--font);padding:6px 13px;background:var(--accent-light);border:1px solid #a0c4b0;border-radius:var(--radius);cursor:pointer;color:var(--accent);font-weight:500;display:inline-flex;align-items:center;gap:5px;}
+  .add-btn:hover{background:#d0ead8;}
+
+  /* BOTÓN GENERAR */
+  .gen-btn{width:100%;padding:12px;font-size:14px;font-weight:600;font-family:var(--font);background:var(--accent);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;}
+  .gen-btn:hover{background:var(--accent-dark);}
+  .gen-btn:disabled{opacity:.5;cursor:not-allowed;}
+  .err-msg{margin-top:9px;font-size:12px;color:var(--red);background:var(--red-bg);border:1px solid #f0c0c0;border-radius:var(--radius);padding:8px 11px;display:none;line-height:1.5;}
+
+  /* OUTPUT */
+  .output-area{display:none;margin-top:24px;}
+  .output-area.visible{display:block;}
+  .out-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:12px;}
+  .out-block-title{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .out-block-title .badge{font-size:10px;padding:2px 7px;border-radius:3px;font-weight:500;}
+  .badge-blue{background:var(--blue-bg);color:var(--blue);}
+  .badge-amber{background:var(--amber-bg);color:var(--amber);}
+  .badge-green{background:var(--green-bg);color:var(--green);}
+  .out-text{font-size:13.5px;color:var(--text);line-height:1.85;white-space:pre-wrap;font-family:var(--font);}
+  .out-text.streaming::after{content:'▌';animation:blink .7s steps(1) infinite;color:var(--accent);}
+  @keyframes blink{50%{opacity:0;}}
+  .copy-btn{margin-top:12px;font-size:11px;font-family:var(--font);padding:5px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;color:var(--text2);font-weight:500;display:inline-flex;align-items:center;gap:4px;transition:all .12s;}
+  .copy-btn:hover{background:var(--accent-light);color:var(--accent);}
+  .copy-btn.done{background:var(--green-bg);color:var(--green);}
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  .spinning{display:inline-block;animation:spin .8s linear infinite;}
+  .hint{font-size:11px;color:var(--text3);margin-top:5px;line-height:1.5;}
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<aside class="sidebar">
+  <div class="sb-logo">Psiquiatría Clínica</div>
+  <div class="sb-title">Asistente Clínico Psiquiátrico</div>
+  <div class="sb-sub">Examen mental · Criterios diagnósticos · Tratamiento GES</div>
+
+  <div class="sb-section">
+    <div class="sb-label">API Key de OpenRouter</div>
+    <div class="api-wrap">
+      <input type="password" id="apiKey" class="api-input" placeholder="sk-or-v1-…"/>
+      <button class="api-eye" onclick="toggleKey()">👁</button>
+    </div>
+    <div class="api-hint">Guardada localmente en este navegador.</div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-label">Obtener clave gratis</div>
+    <ul class="sb-steps">
+      <li data-n="1">Ve a <a href="https://openrouter.ai" target="_blank">openrouter.ai</a></li>
+      <li data-n="2">Sign in con Gmail</li>
+      <li data-n="3"><a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a> → Create Key</li>
+      <li data-n="4">Copia la clave (sk-or-v1-…)</li>
+    </ul>
+  </div>
+
+  <div class="sb-warning">
+    ⚠ Uso clínico de apoyo. Las sugerencias deben ser validadas por el médico tratante. No reemplaza el juicio clínico.
+  </div>
+
+  <div class="sb-footer">
+    Motor: OpenRouter / auto<br>
+    Guías: GES MINSAL Chile<br>
+    Uso desde pendrive: compatible<br>
+    Versión 1.0
+  </div>
+</aside>
+
+<main class="main">
+
+  <div class="sec-title">01 — Datos del paciente</div>
+  <div class="card">
+    <div class="row3" style="margin-bottom:11px">
+      <div class="field"><label>Nombre</label><input type="text" id="nombre" placeholder="Nombre completo"/></div>
+      <div class="field"><label>Edad</label><input type="text" id="edad" placeholder="Ej: 34 años"/></div>
+      <div class="field"><label>Sexo</label>
+        <select id="sexo"><option value="femenino">Femenino</option><option value="masculino">Masculino</option></select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Contexto clínico</label>
+        <select id="contexto">
+          <option value="cosam">COSAM</option>
+          <option value="hospital">Hospital público / urgencia</option>
+          <option value="cesfam">CESFAM / APS</option>
+          <option value="uep">Unidad de psiquiatría hospitalaria</option>
+        </select>
+      </div>
+      <div class="field"><label>Modalidad</label>
+        <select id="modalidad"><option value="presencial">Presencial</option><option value="videollamada">Videollamada</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-title">02 — Diagnóstico(s) psicopatológico(s)</div>
+  <div class="diag-list" id="diagList"></div>
+  <button class="add-btn" onclick="addDiag()">＋ Agregar diagnóstico</button>
+
+  <div class="sec-title" style="margin-top:24px">03 — Notas clínicas</div>
+  <div class="card">
+    <textarea id="notas" placeholder="Describe la presentación clínica: motivo de consulta, síntomas actuales, antecedentes relevantes, tratamientos previos, fármacos actuales, contexto psicosocial, hallazgos del examen, etc. Texto libre."></textarea>
+    <p class="hint">Mientras más detalle incluyas, más específicas serán las sugerencias.</p>
+  </div>
+
+  <button class="gen-btn" id="genBtn" onclick="generar()">✦ Generar examen mental, criterios y sugerencias de tratamiento</button>
+  <div class="err-msg" id="errMsg"></div>
+
+  <div class="output-area" id="outputArea">
+    <div class="sec-title" style="margin-top:24px">04 — Resultado</div>
+
+    <div class="out-block">
+      <div class="out-block-title">Examen mental <span class="badge badge-blue">Descriptivo</span></div>
+      <div class="out-text streaming" id="outExamen"></div>
+      <button class="copy-btn" id="copyEx" onclick="copiar('outExamen','copyEx')">⎘ Copiar</button>
+    </div>
+
+    <div class="out-block">
+      <div class="out-block-title">Criterios diagnósticos <span class="badge badge-amber">CIE-10 / DSM-5</span></div>
+      <div class="out-text streaming" id="outCriterios"></div>
+      <button class="copy-btn" id="copyCr" onclick="copiar('outCriterios','copyCr')">⎘ Copiar</button>
+    </div>
+
+    <div class="out-block">
+      <div class="out-block-title">Sugerencias de tratamiento <span class="badge badge-green">Guías GES MINSAL</span></div>
+      <div class="out-text streaming" id="outTratamiento"></div>
+      <button class="copy-btn" id="copyTr" onclick="copiar('outTratamiento','copyTr')">⎘ Copiar</button>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+const GRUPOS=[
+  {val:'B',label:'Grupo B – Trastornos por consumo de sustancias'},
+  {val:'C',label:'Grupo C – Esquizofrenia / psicosis / trastornos delirantes'},
+  {val:'D',label:'Grupo D – Trastornos del humor'},
+  {val:'E',label:'Grupo E – Trastornos neuróticos / adaptativos'},
+  {val:'F',label:'Grupo F – Trastornos de personalidad'},
+  {val:'A',label:'Grupo A – Trastornos mentales orgánicos'},
+  {val:'G_RM',label:'Grupo G – Trastorno del desarrollo intelectual (RM)'},
+  {val:'G_TEA',label:'Grupo G – Trastorno del espectro autista (TEA)'},
+];
+
+const DIAGS={
+  B:[{v:'dep_alcohol',l:'Dependencia al alcohol'},{v:'dep_drogas',l:'Dependencia a drogas (cocaína, pasta base, cannabis, etc.)'},{v:'abuso_alcohol',l:'Abuso de alcohol'},{v:'abuso_drogas',l:'Abuso de drogas'},{v:'pol_sustancias',l:'Politoxicomanía'},{v:'sindrome_abstinencia',l:'Síndrome de abstinencia'},{v:'trastorno_inducido',l:'Trastorno mental inducido por sustancias'}],
+  C:[{v:'esquizofrenia',l:'Esquizofrenia'},{v:'primer_brote',l:'Esquizofrenia – primer brote psicótico'},{v:'psicosis_lucida',l:'Psicosis lúcida crónica'},{v:'trastorno_delirante',l:'Trastorno delirante persistente (paranoia)'},{v:'esquizoafectivo',l:'Trastorno esquizoafectivo'},{v:'psicosis_aguda',l:'Psicosis aguda no orgánica'}],
+  D:[{v:'depresion_leve',l:'Episodio depresivo leve'},{v:'depresion_moderada',l:'Episodio depresivo moderado'},{v:'depresion_severa',l:'Episodio depresivo severo'},{v:'depresion_recurrente',l:'Trastorno depresivo recurrente'},{v:'bipolar_I',l:'Trastorno afectivo bipolar tipo I'},{v:'bipolar_II',l:'Trastorno afectivo bipolar tipo II'},{v:'distimia',l:'Distimia / trastorno del humor persistente'}],
+  E:[{v:'adaptacion',l:'Trastorno de adaptación'},{v:'ansiedad',l:'Trastorno de ansiedad generalizada'},{v:'fobia',l:'Trastorno fóbico / agorafobia'},{v:'tep',l:'Trastorno por estrés postraumático (TEP)'},{v:'ocd',l:'Trastorno obsesivo-compulsivo'},{v:'somatoforme',l:'Trastorno somatoforme / conversivo'}],
+  F:[{v:'tp_limitrofe',l:'Trastorno de personalidad limítrofe'},{v:'tp_histrionico',l:'Trastorno de personalidad histriónico'},{v:'tp_paranoide',l:'Trastorno de personalidad paranoide'},{v:'tp_antisocial',l:'Trastorno de personalidad antisocial'},{v:'tp_otro',l:'Trastorno de personalidad (otro / mixto)'}],
+  A:[{v:'demencia_leve',l:'Deterioro cognitivo / demencia leve'},{v:'demencia_moderada',l:'Deterioro cognitivo / demencia moderada'},{v:'demencia_severa',l:'Deterioro cognitivo / demencia severa'},{v:'sindrome_organico',l:'Síndrome orgánico cerebral'},{v:'tmo_otro',l:'Otro trastorno mental orgánico'}],
+  G_RM:[{v:'rm_leve',l:'Retraso mental leve (CI 50-70)'},{v:'rm_moderado',l:'Retraso mental moderado (CI 35-49)'},{v:'rm_grave',l:'Retraso mental grave (CI < 35)'}],
+  G_TEA:[{v:'tea_asperger',l:'Síndrome de Asperger / TEA leve'},{v:'tea_moderado',l:'TEA moderado'},{v:'tea_severo',l:'TEA severo'}],
+};
+
+const DIAG_LABELS={
+  dep_alcohol:'Dependencia al alcohol',dep_drogas:'Dependencia a drogas',abuso_alcohol:'Abuso de alcohol',abuso_drogas:'Abuso de drogas',pol_sustancias:'Politoxicomanía',sindrome_abstinencia:'Síndrome de abstinencia',trastorno_inducido:'Trastorno mental inducido por sustancias',
+  esquizofrenia:'Esquizofrenia',primer_brote:'Esquizofrenia – primer brote psicótico',psicosis_lucida:'Psicosis lúcida crónica',trastorno_delirante:'Trastorno delirante persistente',esquizoafectivo:'Trastorno esquizoafectivo',psicosis_aguda:'Psicosis aguda no orgánica',
+  depresion_leve:'Episodio depresivo leve',depresion_moderada:'Episodio depresivo moderado',depresion_severa:'Episodio depresivo severo',depresion_recurrente:'Trastorno depresivo recurrente',bipolar_I:'Trastorno afectivo bipolar tipo I',bipolar_II:'Trastorno afectivo bipolar tipo II',distimia:'Distimia',
+  adaptacion:'Trastorno de adaptación',ansiedad:'Trastorno de ansiedad generalizada',fobia:'Trastorno fóbico / agorafobia',tep:'Trastorno por estrés postraumático',ocd:'Trastorno obsesivo-compulsivo',somatoforme:'Trastorno somatoforme',
+  tp_limitrofe:'Trastorno de personalidad limítrofe',tp_histrionico:'Trastorno de personalidad histriónico',tp_paranoide:'Trastorno de personalidad paranoide',tp_antisocial:'Trastorno de personalidad antisocial',tp_otro:'Trastorno de personalidad mixto',
+  demencia_leve:'Deterioro cognitivo leve',demencia_moderada:'Deterioro cognitivo moderado',demencia_severa:'Demencia severa',sindrome_organico:'Síndrome orgánico cerebral',tmo_otro:'Trastorno mental orgánico',
+  rm_leve:'Retraso mental leve',rm_moderado:'Retraso mental moderado',rm_grave:'Retraso mental grave',
+  tea_asperger:'Síndrome de Asperger / TEA leve',tea_moderado:'TEA moderado',tea_severo:'TEA severo',
+};
+
+let diagCount=0;
+
+function init(){
+  addDiag();
+  const k=localStorage.getItem('or_key_clinico');
+  if(k) document.getElementById('apiKey').value=k;
+}
+
+function toggleKey(){const i=document.getElementById('apiKey');i.type=i.type==='password'?'text':'password';}
+
+function addDiag(){
+  const n=++diagCount;
+  const el=document.createElement('div');
+  el.className='diag-card';el.id=`diag_${n}`;
+  el.innerHTML=`
+    <div class="diag-head">
+      <span class="diag-num">DX. ${n}</span>
+      <button class="diag-rm" onclick="rmDiag(${n})">✕ Quitar</button>
+    </div>
+    <div class="row2" style="margin-bottom:8px">
+      <div class="field"><label>Grupo diagnóstico</label>
+        <select id="g_${n}" onchange="onGrupo(${n})">
+          <option value="">— Seleccionar grupo —</option>
+          ${GRUPOS.map(g=>`<option value="${g.val}">${g.label}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Diagnóstico específico</label>
+        <select id="d_${n}"><option value="">— Primero selecciona grupo —</option></select>
+      </div>
+    </div>
+    <div class="field"><label>Observaciones / especificaciones (opcional)</label>
+      <input type="text" id="obs_${n}" placeholder="Ej: primer episodio, sin tratamiento previo, con comorbilidad…"/>
+    </div>`;
+  document.getElementById('diagList').appendChild(el);
+}
+
+function rmDiag(n){const el=document.getElementById(`diag_${n}`);if(el)el.remove();renum();}
+function renum(){document.querySelectorAll('.diag-card').forEach((el,i)=>{const b=el.querySelector('.diag-num');if(b)b.textContent=`DX. ${i+1}`;});}
+
+function onGrupo(n){
+  const g=document.getElementById(`g_${n}`).value;
+  const sel=document.getElementById(`d_${n}`);
+  sel.innerHTML='<option value="">— Seleccionar diagnóstico —</option>';
+  if(g&&DIAGS[g])DIAGS[g].forEach(d=>{const o=document.createElement('option');o.value=d.v;o.textContent=d.l;sel.appendChild(o);});
+}
+
+function getDiags(){
+  return Array.from(document.querySelectorAll('.diag-card')).map(el=>{
+    const id=el.id.replace('diag_','');
+    return{
+      grupo:(document.getElementById(`g_${id}`)||{}).value||'',
+      diag:(document.getElementById(`d_${id}`)||{}).value||'',
+      obs:(document.getElementById(`obs_${id}`)||{}).value||'',
+    };
+  });
+}
+
+async function generar(){
+  const apiKey=document.getElementById('apiKey').value.trim();
+  if(!apiKey){mostrarError('Ingresa tu API key de OpenRouter en el panel izquierdo.');return;}
+
+  const nombre=document.getElementById('nombre').value.trim();
+  const edad=document.getElementById('edad').value.trim();
+  const sexo=document.getElementById('sexo').value;
+  const contexto=document.getElementById('contexto').value;
+  const modalidad=document.getElementById('modalidad').value;
+  const notas=document.getElementById('notas').value.trim();
+  const diags=getDiags();
+
+  if(diags.length===0){mostrarError('Agrega al menos un diagnóstico.');return;}
+  if(diags.find(d=>!d.grupo||!d.diag)){mostrarError('Completa grupo y diagnóstico en todos los campos.');return;}
+  if(!notas){mostrarError('Ingresa las notas clínicas.');return;}
+  mostrarError('');
+
+  localStorage.setItem('or_key_clinico',apiKey);
+
+  const btn=document.getElementById('genBtn');
+  btn.disabled=true;btn.innerHTML='<span class="spinning">⟳</span> Generando…';
+
+  const contextoMap={cosam:'COSAM',hospital:'Hospital público / urgencia psiquiátrica',cesfam:'CESFAM / APS',uep:'Unidad de psiquiatría hospitalaria'};
+
+  const diagsStr=diags.map((d,i)=>{
+    const label=DIAG_LABELS[d.diag]||d.diag;
+    return`  ${i+1}. ${label}${d.obs?` (${d.obs})`:''}`;
+  }).join('\n');
+
+  const prompt=`Eres un psiquiatra clínico experto en el sistema de salud mental público de Chile, con amplio conocimiento de las Guías Clínicas GES del MINSAL, el DSM-5 y la CIE-10.
+
+DATOS DEL PACIENTE:
+- Nombre: ${nombre||'no especificado'}
+- Edad: ${edad||'no especificada'}, sexo ${sexo}
+- Contexto: ${contextoMap[contexto]}
+- Modalidad de evaluación: ${modalidad}
+
+DIAGNÓSTICO(S) PSICOPATOLÓGICO(S):
+${diagsStr}
+
+NOTAS CLÍNICAS:
+${notas}
+
+INSTRUCCIONES:
+Genera exactamente TRES secciones separadas por delimitadores. NO agregues texto antes del primer delimitador.
+
+---EXAMEN_MENTAL---
+Redacta el examen mental completo en prosa clínica continua (sin bullet points). Incluye: presentación general (aspecto, higiene, constitución, representación etaria); psicomotilidad y actitud; lenguaje (prosodia, fluidez, vocabulario); afectividad (modulación, concordancia, presencia de irritabilidad, ansiedad, labilidad); pensamiento (organización, contenido, presencia o ausencia de productividad psicótica, ideación autolítica); orientación y memoria cuando sea relevante; insight y conciencia de enfermedad. 3-5 párrafos. Tercera persona, estilo objetivo y técnico.
+
+---CRITERIOS_DIAGNOSTICOS---
+Para cada diagnóstico listado:
+1. Señala los criterios diagnósticos CIE-10 y DSM-5 relevantes que se cumplen en este caso, basándote en las notas clínicas.
+2. Menciona los diagnósticos diferenciales más importantes a considerar y cómo descartarlos o confirmarlos.
+3. Si hay más de un diagnóstico, analiza la relación entre ellos (comorbilidad, diagnóstico principal vs secundario).
+Redacta en prosa estructurada, sin bullet points.
+
+---TRATAMIENTO---
+Para cada diagnóstico, basándote en las Guías Clínicas GES MINSAL Chile (esquizofrenia primer brote, trastorno afectivo bipolar, depresión, consumo de sustancias) y en la evidencia clínica actual:
+
+1. TRATAMIENTO FARMACOLÓGICO: indica las opciones de primera línea con nombre genérico, rango de dosis habitual, y consideraciones específicas para este paciente (edad, contexto, comorbilidades). Menciona opciones de segunda línea si corresponde.
+
+2. CRITERIOS DE HOSPITALIZACIÓN: señala si el caso actual tiene criterios de hospitalización según las guías GES y cuáles son.
+
+3. NIVEL DE ATENCIÓN RECOMENDADO: indica si debe manejarse en APS, COSAM, hospital de día o unidad de hospitalización, según las guías GES y la clínica descrita.
+
+Redacta en prosa estructurada. Incluye advertencia al final recordando que estas son sugerencias de apoyo y que el médico tratante debe validar toda indicación.`;
+
+  const outArea=document.getElementById('outputArea');
+  const outEx=document.getElementById('outExamen');
+  const outCr=document.getElementById('outCriterios');
+  const outTr=document.getElementById('outTratamiento');
+
+  outArea.classList.add('visible');
+  outEx.textContent='';outCr.textContent='';outTr.textContent='';
+  outEx.classList.add('streaming');outCr.classList.add('streaming');outTr.classList.add('streaming');
+  outArea.scrollIntoView({behavior:'smooth',block:'start'});
+
+  try{
+    const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${apiKey}`,
+        'HTTP-Referer':'https://niconaish.github.io',
+        'X-Title':'Asistente Clinico Psiquiatrico'
+      },
+      body:JSON.stringify({
+        model:'openrouter/auto',
+        stream:true,
+        max_tokens:3500,
+        temperature:0.3,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+
+    if(!res.ok){
+      const err=await res.json().catch(()=>({}));
+      throw new Error(err?.error?.message||`Error HTTP ${res.status}`);
+    }
+
+    const reader=res.body.getReader();
+    const decoder=new TextDecoder();
+    let buffer='',fullText='';
+
+    while(true){
+      const{done,value}=await reader.read();
+      if(done)break;
+      buffer+=decoder.decode(value,{stream:true});
+      const lines=buffer.split('\n');buffer=lines.pop();
+      for(const line of lines){
+        if(!line.startsWith('data: '))continue;
+        const data=line.slice(6).trim();
+        if(data==='[DONE]')break;
+        try{
+          const json=JSON.parse(data);
+          const chunk=json?.choices?.[0]?.delta?.content||'';
+          if(chunk){
+            fullText+=chunk;
+            const ex=extraer(fullText,'---EXAMEN_MENTAL---','---CRITERIOS_DIAGNOSTICOS---');
+            const cr=extraer(fullText,'---CRITERIOS_DIAGNOSTICOS---','---TRATAMIENTO---');
+            const tr=extraer(fullText,'---TRATAMIENTO---',null);
+            if(ex!==null)outEx.textContent=ex.trim();
+            if(cr!==null)outCr.textContent=cr.trim();
+            if(tr!==null)outTr.textContent=tr.trim();
+          }
+        }catch(e){}
+      }
+    }
+    outEx.classList.remove('streaming');
+    outCr.classList.remove('streaming');
+    outTr.classList.remove('streaming');
+  }catch(err){
+    mostrarError(`Error: ${err.message}`);
+    outArea.classList.remove('visible');
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='✦ Generar examen mental, criterios y sugerencias de tratamiento';
+  }
+}
+
+function extraer(texto,inicio,fin){
+  const i=texto.indexOf(inicio);if(i===-1)return null;
+  const desde=i+inicio.length;
+  if(fin){const j=texto.indexOf(fin,desde);return j===-1?texto.slice(desde):texto.slice(desde,j);}
+  return texto.slice(desde);
+}
+
+function mostrarError(msg){const el=document.getElementById('errMsg');el.style.display=msg?'block':'none';el.textContent=msg;}
+
+async function copiar(id,btnId){
+  await navigator.clipboard.writeText(document.getElementById(id).textContent);
+  const btn=document.getElementById(btnId);
+  btn.textContent='✓ Copiado';btn.classList.add('done');
+  setTimeout(()=>{btn.innerHTML='⎘ Copiar';btn.classList.remove('done');},2000);
+}
+
+init();
+</script>
+</body>
+</html>
