@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Evolución Hospitalaria Psiquiátrica</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --bg:#f4f3f0;--surface:#fff;--surface2:#f9f8f6;--border:#e0ddd8;--border2:#d0cdc8;
+    --text:#1a1916;--text2:#5a5753;--text3:#9a9693;
+    --accent:#3a2a5c;--accent-light:#ede8f5;--accent-dark:#281c42;
+    --psi:#3a2a5c;--psi-bg:#ede8f5;--psi-border:#c8bce0;
+    --org:#1a4a5c;--org-bg:#e5f0f4;--org-border:#b0d0dc;
+    --red:#5c1a1a;--red-bg:#f5e8e8;
+    --green:#1a5c3a;--green-bg:#e8f5ee;
+    --font:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;}
+  .shell{display:grid;grid-template-columns:270px 1fr;min-height:100vh;}
+
+  .sidebar{background:var(--accent);color:#fff;padding:24px 18px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+  .sb-logo{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:5px;}
+  .sb-title{font-size:15px;font-weight:600;color:#fff;line-height:1.3;margin-bottom:3px;}
+  .sb-sub{font-size:11px;color:rgba(255,255,255,.5);margin-bottom:24px;line-height:1.5;}
+  .sb-section{margin-bottom:18px;}
+  .sb-label{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:7px;}
+  .api-wrap{position:relative;}
+  .api-input{width:100%;padding:7px 32px 7px 9px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:var(--radius);font-family:var(--mono);font-size:11px;color:#fff;}
+  .api-input::placeholder{color:rgba(255,255,255,.3);}
+  .api-input:focus{outline:none;border-color:rgba(255,255,255,.45);}
+  .api-eye{position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,.45);font-size:12px;}
+  .api-hint{font-size:10px;color:rgba(255,255,255,.3);margin-top:5px;line-height:1.55;}
+  .sb-warning{background:rgba(255,200,0,.12);border:1px solid rgba(255,200,0,.25);border-radius:var(--radius);padding:8px 10px;font-size:10px;color:rgba(255,255,200,.7);line-height:1.55;margin-top:12px;}
+  .sb-footer{margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,.1);font-size:10px;color:rgba(255,255,255,.28);line-height:1.6;}
+
+  .main{padding:28px 32px;max-width:860px;}
+  .sec-title{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;}
+  .field{display:flex;flex-direction:column;gap:4px;}
+  .field label{font-size:11px;font-weight:500;color:var(--text2);}
+  input[type=text],select,textarea{font-family:var(--font);font-size:13px;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 9px;width:100%;transition:border-color .15s;}
+  input[type=text]:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);background:#fff;}
+  textarea{resize:vertical;line-height:1.6;}
+
+  /* DIAGNÓSTICOS */
+  .diag-list{display:flex;flex-direction:column;gap:9px;margin-bottom:10px;}
+  .diag-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;}
+  .diag-head{display:flex;align-items:center;gap:7px;margin-bottom:9px;}
+  .diag-num{font-family:var(--mono);font-size:10px;background:var(--accent);color:#fff;border-radius:3px;padding:2px 7px;}
+  .diag-rm{margin-left:auto;font-size:11px;padding:2px 8px;background:transparent;border:1px solid var(--border2);border-radius:var(--radius);cursor:pointer;color:var(--text2);font-family:var(--font);}
+  .diag-rm:hover{background:var(--red-bg);color:var(--red);}
+
+  /* SEMIOLOGÍA */
+  .semio-domain{margin-bottom:13px;}
+  .semio-domain-label{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;letter-spacing:.02em;}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;}
+  .chip{font-size:11.5px;padding:4px 11px;border:1px solid var(--border);border-radius:20px;cursor:pointer;color:var(--text2);background:var(--surface2);transition:all .1s;user-select:none;font-family:var(--font);}
+  .chip:hover{border-color:var(--border2);background:var(--surface);}
+  .chip.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  /* PROBLEMAS */
+  .prob-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
+  .prob-card{border-radius:var(--radius);padding:11px 13px;}
+  .prob-card.psi{background:var(--psi-bg);border:1px solid var(--psi-border);}
+  .prob-card.org{background:var(--org-bg);border:1px solid var(--org-border);}
+  .prob-head{display:flex;align-items:center;gap:7px;margin-bottom:8px;}
+  .prob-num{font-family:var(--mono);font-size:10px;color:#fff;border-radius:3px;padding:2px 7px;}
+  .prob-card.psi .prob-num{background:var(--psi);}
+  .prob-card.org .prob-num{background:var(--org);}
+  .prob-rm{margin-left:auto;font-size:11px;padding:2px 8px;background:rgba(255,255,255,.5);border:1px solid var(--border2);border-radius:var(--radius);cursor:pointer;color:var(--text2);font-family:var(--font);}
+  .prob-rm:hover{background:var(--red-bg);color:var(--red);}
+  .prob-row{display:grid;grid-template-columns:2fr 1fr;gap:8px;}
+  .add-btn{font-size:12px;font-family:var(--font);padding:6px 13px;border-radius:var(--radius);cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:5px;margin-right:8px;border:1px solid;}
+  .add-btn.acc{background:var(--accent-light);border-color:#c8bce0;color:var(--accent);}
+  .add-btn.acc:hover{background:#ddd2f0;}
+  .add-btn.org{background:var(--org-bg);border-color:var(--org-border);color:var(--org);}
+  .add-btn.org:hover{background:#d0e5ec;}
+
+  .gen-btn{width:100%;padding:12px;font-size:14px;font-weight:600;font-family:var(--font);background:var(--accent);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;}
+  .gen-btn:hover{background:var(--accent-dark);}
+  .gen-btn:disabled{opacity:.5;cursor:not-allowed;}
+  .err-msg{margin-top:9px;font-size:12px;color:var(--red);background:var(--red-bg);border:1px solid #f0c0c0;border-radius:var(--radius);padding:8px 11px;display:none;line-height:1.5;}
+
+  .output-area{display:none;margin-top:24px;}
+  .output-area.visible{display:block;}
+  .out-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:12px;}
+  .out-block-title{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .badge{font-size:10px;padding:2px 7px;border-radius:3px;font-weight:500;}
+  .badge-psi{background:var(--psi-bg);color:var(--psi);}
+  .badge-org{background:var(--org-bg);color:var(--org);}
+  .badge-green{background:var(--green-bg);color:var(--green);}
+  .out-text{font-size:13.5px;color:var(--text);line-height:1.85;white-space:pre-wrap;font-family:var(--font);}
+  .out-text.streaming::after{content:'▌';animation:blink .7s steps(1) infinite;color:var(--accent);}
+  @keyframes blink{50%{opacity:0;}}
+  .copy-btn{margin-top:12px;font-size:11px;font-family:var(--font);padding:5px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;color:var(--text2);font-weight:500;display:inline-flex;align-items:center;gap:4px;transition:all .12s;}
+  .copy-btn:hover{background:var(--accent-light);color:var(--accent);}
+  .copy-btn.done{background:var(--green-bg);color:var(--green);}
+  .copy-all-btn{width:100%;margin-top:4px;padding:10px;font-size:13px;font-weight:500;font-family:var(--font);background:var(--surface);color:var(--accent);border:1px solid var(--accent);border-radius:var(--radius);cursor:pointer;}
+  .copy-all-btn:hover{background:var(--accent-light);}
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  .spinning{display:inline-block;animation:spin .8s linear infinite;}
+  .hint{font-size:11px;color:var(--text3);margin-top:5px;line-height:1.5;}
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<aside class="sidebar">
+  <div class="sb-logo">Psiquiatría de Enlace / Hospitalaria</div>
+  <div class="sb-title">Evolución Hospitalaria Psiquiátrica</div>
+  <div class="sb-sub">Evolución diaria · Semiología dirigida · Lista de problemas · Planes de acción</div>
+
+  <div class="sb-section">
+    <div class="sb-label">API Key de OpenRouter</div>
+    <div class="api-wrap">
+      <input type="password" id="apiKey" class="api-input" placeholder="sk-or-v1-…"/>
+      <button class="api-eye" onclick="toggleKey()">👁</button>
+    </div>
+    <div class="api-hint">Guardada localmente en este navegador.</div>
+  </div>
+
+  <div class="sb-warning">
+    ⚠ Herramienta de apoyo clínico. Toda indicación debe ser validada por el médico tratante. No reemplaza el juicio clínico.
+  </div>
+
+  <div class="sb-footer">
+    Motor: OpenRouter / auto<br>
+    Formato: evolución por problemas<br>
+    Versión 2.0 — con semiología dirigida
+  </div>
+</aside>
+
+<main class="main">
+
+  <div class="sec-title">01 — Datos del paciente</div>
+  <div class="card">
+    <div class="row3" style="margin-bottom:11px">
+      <div class="field"><label>Nombre</label><input type="text" id="nombre" placeholder="Nombre completo"/></div>
+      <div class="field"><label>Edad</label><input type="text" id="edad" placeholder="Ej: 34 años"/></div>
+      <div class="field"><label>Sexo</label>
+        <select id="sexo"><option value="femenino">Femenino</option><option value="masculino">Masculino</option></select>
+      </div>
+    </div>
+    <div class="row3">
+      <div class="field"><label>Día de hospitalización</label><input type="text" id="diaHosp" placeholder="Ej: día 5"/></div>
+      <div class="field"><label>Unidad</label>
+        <select id="unidad">
+          <option value="uhcip">UHCIP / psiquiatría aguda</option>
+          <option value="enlace">Psiquiatría de enlace (servicio médico)</option>
+          <option value="uci">UCI / UTI (interconsulta)</option>
+          <option value="medicina">Medicina interna</option>
+          <option value="urgencia">Urgencia</option>
+        </select>
+      </div>
+      <div class="field"><label>Fecha de evolución</label><input type="text" id="fecha" placeholder="Ej: 29-05-2026"/></div>
+    </div>
+  </div>
+
+  <div class="sec-title">02 — Diagnóstico(s) psiquiátrico(s)</div>
+  <div class="diag-list" id="diagList"></div>
+  <button class="add-btn acc" onclick="addDiag()">＋ Agregar diagnóstico</button>
+
+  <div class="sec-title" style="margin-top:22px">03 — Descripción semiológica de hoy</div>
+  <div class="card">
+    <p class="hint" style="margin-top:0;margin-bottom:12px">Marca los hallazgos observados. El examen mental se construirá en torno a estos hallazgos y al diagnóstico, elaborándolos con lenguaje psicopatológico técnico.</p>
+    <div id="semioContainer"></div>
+    <div class="field" style="margin-top:6px">
+      <label>Otros hallazgos semiológicos (texto libre, opcional)</label>
+      <input type="text" id="semioLibre" placeholder="Ej: pestañeo estereotipado, prosodia traposa, llanto al mencionar a la familia…"/>
+    </div>
+  </div>
+
+  <div class="sec-title">04 — Problemas psiquiátricos activos</div>
+  <div class="prob-list" id="psiList"></div>
+  <button class="add-btn acc" onclick="addProb('psi')">＋ Agregar problema psiquiátrico</button>
+
+  <div class="sec-title" style="margin-top:22px">05 — Problemas orgánicos / médicos activos</div>
+  <div class="prob-list" id="orgList"></div>
+  <button class="add-btn org" onclick="addProb('org')">＋ Agregar problema orgánico</button>
+
+  <div class="sec-title" style="margin-top:22px">06 — Evolución previa (examen mental / nota anterior)</div>
+  <div class="card">
+    <textarea id="previo" style="min-height:90px" placeholder="Pega aquí el examen mental o la evolución del día anterior. Si es el ingreso, déjalo vacío."></textarea>
+    <p class="hint">Permite modular el examen mental respecto al estado previo (mejoría, estabilidad, empeoramiento).</p>
+  </div>
+
+  <div class="sec-title">07 — Observaciones y cambios de hoy</div>
+  <div class="card">
+    <textarea id="hoy" style="min-height:100px" placeholder="Reporte de enfermería, sueño, alimentación, adherencia, conducta en la unidad, eventos (agitación, contención, visitas), cambios de fármacos, exámenes, interconsultas…"></textarea>
+  </div>
+
+  <button class="gen-btn" id="genBtn" onclick="generar()">✦ Generar evolución del día</button>
+  <div class="err-msg" id="errMsg"></div>
+
+  <div class="output-area" id="outputArea">
+    <div class="sec-title" style="margin-top:24px">08 — Evolución generada</div>
+
+    <div class="out-block">
+      <div class="out-block-title">Examen mental actual <span class="badge badge-psi">Según diagnóstico + semiología</span></div>
+      <div class="out-text streaming" id="outExamen"></div>
+      <button class="copy-btn" id="copyEx" onclick="copiar('outExamen','copyEx')">⎘ Copiar</button>
+    </div>
+
+    <div class="out-block">
+      <div class="out-block-title">Problemas psiquiátricos — análisis y plan <span class="badge badge-psi">Por problema</span></div>
+      <div class="out-text streaming" id="outPsi"></div>
+      <button class="copy-btn" id="copyPs" onclick="copiar('outPsi','copyPs')">⎘ Copiar</button>
+    </div>
+
+    <div class="out-block">
+      <div class="out-block-title">Problemas orgánicos — análisis y plan <span class="badge badge-org">Por problema</span></div>
+      <div class="out-text streaming" id="outOrg"></div>
+      <button class="copy-btn" id="copyOr" onclick="copiar('outOrg','copyOr')">⎘ Copiar</button>
+    </div>
+
+    <div class="out-block">
+      <div class="out-block-title">Síntesis y plan general del día <span class="badge badge-green">Resumen</span></div>
+      <div class="out-text streaming" id="outPlan"></div>
+      <button class="copy-btn" id="copyPl" onclick="copiar('outPlan','copyPl')">⎘ Copiar</button>
+    </div>
+
+    <button class="copy-all-btn" onclick="copiarTodo()">⎘ Copiar evolución completa</button>
+  </div>
+
+</main>
+</div>
+
+<script>
+const GRUPOS=[
+  {val:'B',label:'Grupo B – Trastornos por consumo de sustancias'},
+  {val:'C',label:'Grupo C – Esquizofrenia / psicosis / trastornos delirantes'},
+  {val:'D',label:'Grupo D – Trastornos del humor'},
+  {val:'E',label:'Grupo E – Trastornos neuróticos / adaptativos'},
+  {val:'F',label:'Grupo F – Trastornos de personalidad'},
+  {val:'A',label:'Grupo A – Trastornos mentales orgánicos'},
+  {val:'G_RM',label:'Grupo G – Trastorno del desarrollo intelectual (RM)'},
+  {val:'G_TEA',label:'Grupo G – Trastorno del espectro autista (TEA)'},
+];
+
+const DIAGS={
+  B:[{v:'dep_alcohol',l:'Dependencia al alcohol'},{v:'dep_drogas',l:'Dependencia a drogas'},{v:'abuso_alcohol',l:'Abuso de alcohol'},{v:'abuso_drogas',l:'Abuso de drogas'},{v:'pol_sustancias',l:'Politoxicomanía'},{v:'sindrome_abstinencia',l:'Síndrome de abstinencia'},{v:'trastorno_inducido',l:'Trastorno mental inducido por sustancias'}],
+  C:[{v:'esquizofrenia',l:'Esquizofrenia'},{v:'primer_brote',l:'Primer brote psicótico'},{v:'psicosis_lucida',l:'Psicosis lúcida crónica'},{v:'trastorno_delirante',l:'Trastorno delirante persistente'},{v:'esquizoafectivo',l:'Trastorno esquizoafectivo'},{v:'psicosis_aguda',l:'Psicosis aguda no orgánica'}],
+  D:[{v:'depresion_leve',l:'Episodio depresivo leve'},{v:'depresion_moderada',l:'Episodio depresivo moderado'},{v:'depresion_severa',l:'Episodio depresivo severo'},{v:'depresion_recurrente',l:'Trastorno depresivo recurrente'},{v:'bipolar_mania',l:'TAB – episodio maníaco'},{v:'bipolar_dep',l:'TAB – episodio depresivo'},{v:'bipolar_mixto',l:'TAB – episodio mixto'},{v:'distimia',l:'Distimia'}],
+  E:[{v:'adaptacion',l:'Trastorno de adaptación'},{v:'ansiedad',l:'Trastorno de ansiedad generalizada'},{v:'fobia',l:'Trastorno fóbico / agorafobia'},{v:'tep',l:'Trastorno por estrés postraumático'},{v:'ocd',l:'Trastorno obsesivo-compulsivo'},{v:'somatoforme',l:'Trastorno somatoforme / conversivo'}],
+  F:[{v:'tp_limitrofe',l:'Trastorno de personalidad limítrofe'},{v:'tp_histrionico',l:'TP histriónico'},{v:'tp_paranoide',l:'TP paranoide'},{v:'tp_antisocial',l:'TP antisocial'},{v:'tp_otro',l:'TP otro / mixto'}],
+  A:[{v:'delirium',l:'Delirium / síndrome confusional agudo'},{v:'demencia_leve',l:'Deterioro cognitivo leve'},{v:'demencia_moderada',l:'Deterioro cognitivo moderado'},{v:'demencia_severa',l:'Demencia severa'},{v:'sindrome_organico',l:'Síndrome orgánico cerebral'},{v:'tmo_otro',l:'Otro trastorno mental orgánico'}],
+  G_RM:[{v:'rm_leve',l:'Retraso mental leve'},{v:'rm_moderado',l:'Retraso mental moderado'},{v:'rm_grave',l:'Retraso mental grave'}],
+  G_TEA:[{v:'tea_asperger',l:'TEA leve / Asperger'},{v:'tea_moderado',l:'TEA moderado'},{v:'tea_severo',l:'TEA severo'}],
+};
+
+const DIAG_LABELS={
+  dep_alcohol:'Dependencia al alcohol',dep_drogas:'Dependencia a drogas',abuso_alcohol:'Abuso de alcohol',abuso_drogas:'Abuso de drogas',pol_sustancias:'Politoxicomanía',sindrome_abstinencia:'Síndrome de abstinencia',trastorno_inducido:'Trastorno mental inducido por sustancias',
+  esquizofrenia:'Esquizofrenia',primer_brote:'Primer brote psicótico',psicosis_lucida:'Psicosis lúcida crónica',trastorno_delirante:'Trastorno delirante persistente',esquizoafectivo:'Trastorno esquizoafectivo',psicosis_aguda:'Psicosis aguda no orgánica',
+  depresion_leve:'Episodio depresivo leve',depresion_moderada:'Episodio depresivo moderado',depresion_severa:'Episodio depresivo severo',depresion_recurrente:'Trastorno depresivo recurrente',bipolar_mania:'Trastorno afectivo bipolar – episodio maníaco',bipolar_dep:'Trastorno afectivo bipolar – episodio depresivo',bipolar_mixto:'Trastorno afectivo bipolar – episodio mixto',distimia:'Distimia',
+  adaptacion:'Trastorno de adaptación',ansiedad:'Trastorno de ansiedad generalizada',fobia:'Trastorno fóbico / agorafobia',tep:'Trastorno por estrés postraumático',ocd:'Trastorno obsesivo-compulsivo',somatoforme:'Trastorno somatoforme / conversivo',
+  tp_limitrofe:'Trastorno de personalidad limítrofe',tp_histrionico:'Trastorno de personalidad histriónico',tp_paranoide:'Trastorno de personalidad paranoide',tp_antisocial:'Trastorno de personalidad antisocial',tp_otro:'Trastorno de personalidad mixto',
+  delirium:'Delirium / síndrome confusional agudo',demencia_leve:'Deterioro cognitivo leve',demencia_moderada:'Deterioro cognitivo moderado',demencia_severa:'Demencia severa',sindrome_organico:'Síndrome orgánico cerebral',tmo_otro:'Trastorno mental orgánico',
+  rm_leve:'Retraso mental leve',rm_moderado:'Retraso mental moderado',rm_grave:'Retraso mental grave',
+  tea_asperger:'TEA leve / Asperger',tea_moderado:'TEA moderado',tea_severo:'TEA severo',
+};
+
+const SEMIO=[
+  {id:'apariencia',label:'Apariencia y actitud',opts:['Cooperador','Oposicionista','Suspicaz','Pueril / candoroso','Impositivo','Distante','Quejumbroso','Desaseado','Buen arreglo personal']},
+  {id:'psicomot',label:'Psicomotilidad',opts:['Sin alteraciones','Enlentecida','Inquietud psicomotora','Agitación','Estereotipias','Temblor','Catatoniforme','Contención reciente']},
+  {id:'lenguaje',label:'Lenguaje',opts:['Normal','Verborreico','Escaso','Mutismo parcial','Disártrico / traposo','Tono bajo','Prosodia particular','Rimbombante']},
+  {id:'afecto',label:'Afectividad',opts:['Eutímico','Depresivo','Ansioso','Irritable','Lábil','Aplanado','Discordante','Expansivo','Disfórico','Angustiado','Pueril']},
+  {id:'curso',label:'Pensamiento – curso',opts:['Coherente','Bradipsiquia','Tangencial','Disgregado','Fuga de ideas','Perseverante','Concreto','Sobreelaborado']},
+  {id:'contenido',label:'Pensamiento – contenido',opts:['Sin delirios','Ideas paranoides','Ideas de referencia','Ideas de ruina / culpa','Ideas megalomaníacas','Ideas hipocondríacas','Delirio encapsulado','Escamotea ideas delirantes','Ideas sobrevaloradas']},
+  {id:'sensoperc',label:'Sensopercepción',opts:['Sin alteraciones','Alucinaciones auditivas','Alucinaciones visuales','Voces comandatorias','Ilusiones','Pseudoalucinaciones','Disimula / escamotea']},
+  {id:'suicid',label:'Suicidalidad',opts:['Sin ideación','Ideación pasiva','Ideación activa sin plan','Ideación activa con plan','Gesto / intento reciente','Fantaseada / coercitiva','Heteroagresividad']},
+  {id:'conciencia',label:'Conciencia y orientación',opts:['Lúcido','Obnubilado','Fluctuante (delirium)','Desorientado temporal','Desorientado espacial','Hipoprosexia']},
+  {id:'insight',label:'Insight',opts:['Conservado','Parcial','Ausente','Pobre conciencia de enfermedad']},
+];
+
+let probCount=0,diagCount=0;
+
+function init(){
+  buildSemio();
+  addDiag();
+  addProb('psi');
+  addProb('org');
+  const k=localStorage.getItem('or_key_evolucion');
+  if(k)document.getElementById('apiKey').value=k;
+}
+
+function toggleKey(){const i=document.getElementById('apiKey');i.type=i.type==='password'?'text':'password';}
+
+function buildSemio(){
+  const c=document.getElementById('semioContainer');
+  SEMIO.forEach(dom=>{
+    const div=document.createElement('div');
+    div.className='semio-domain';
+    div.innerHTML=`<div class="semio-domain-label">${dom.label}</div>`;
+    const chips=document.createElement('div');
+    chips.className='chips';
+    dom.opts.forEach(opt=>{
+      const chip=document.createElement('span');
+      chip.className='chip';
+      chip.textContent=opt;
+      chip.dataset.domain=dom.id;
+      chip.dataset.value=opt;
+      chip.onclick=()=>chip.classList.toggle('sel');
+      chips.appendChild(chip);
+    });
+    div.appendChild(chips);
+    c.appendChild(div);
+  });
+}
+
+function getSemio(){
+  const result={};
+  SEMIO.forEach(dom=>{
+    const sels=Array.from(document.querySelectorAll(`.chip.sel[data-domain="${dom.id}"]`)).map(c=>c.dataset.value);
+    if(sels.length>0)result[dom.label]=sels;
+  });
+  return result;
+}
+
+function addDiag(){
+  const n=++diagCount;
+  const el=document.createElement('div');
+  el.className='diag-card';el.id=`diag_${n}`;
+  el.innerHTML=`
+    <div class="diag-head">
+      <span class="diag-num">DX. ${n}</span>
+      <button class="diag-rm" onclick="rmDiag(${n})">✕ Quitar</button>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Grupo</label>
+        <select id="g_${n}" onchange="onGrupo(${n})">
+          <option value="">— Seleccionar grupo —</option>
+          ${GRUPOS.map(g=>`<option value="${g.val}">${g.label}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Diagnóstico</label>
+        <select id="d_${n}"><option value="">— Primero el grupo —</option></select>
+      </div>
+    </div>`;
+  document.getElementById('diagList').appendChild(el);
+}
+
+function rmDiag(n){const el=document.getElementById(`diag_${n}`);if(el)el.remove();}
+
+function onGrupo(n){
+  const g=document.getElementById(`g_${n}`).value;
+  const sel=document.getElementById(`d_${n}`);
+  sel.innerHTML='<option value="">— Seleccionar —</option>';
+  if(g&&DIAGS[g])DIAGS[g].forEach(d=>{const o=document.createElement('option');o.value=d.v;o.textContent=d.l;sel.appendChild(o);});
+}
+
+function getDiags(){
+  return Array.from(document.querySelectorAll('.diag-card')).map(el=>{
+    const id=el.id.replace('diag_','');
+    return{
+      grupo:(document.getElementById(`g_${id}`)||{}).value||'',
+      diag:(document.getElementById(`d_${id}`)||{}).value||'',
+    };
+  }).filter(d=>d.diag!=='');
+}
+
+function addProb(tipo){
+  const n=++probCount;
+  const el=document.createElement('div');
+  el.className=`prob-card ${tipo}`;
+  el.id=`prob_${n}`;
+  el.dataset.tipo=tipo;
+  const prefix=tipo==='psi'?'PSI':'ORG';
+  const ESTADOS=['Activo','En estudio','Mejorando','Estable','Empeorando','Resuelto'];
+  el.innerHTML=`
+    <div class="prob-head">
+      <span class="prob-num">${prefix}</span>
+      <button class="prob-rm" onclick="rmProb(${n})">✕</button>
+    </div>
+    <div class="prob-row">
+      <div class="field"><label>Problema</label>
+        <input type="text" id="p_${n}" placeholder="${tipo==='psi'?'Ej: agitación, síntomas psicóticos, riesgo suicida…':'Ej: neumonía, hiponatremia, diabetes descompensada…'}"/>
+      </div>
+      <div class="field"><label>Estado</label>
+        <select id="e_${n}">${ESTADOS.map(e=>`<option value="${e}">${e}</option>`).join('')}</select>
+      </div>
+    </div>`;
+  document.getElementById(tipo==='psi'?'psiList':'orgList').appendChild(el);
+}
+
+function rmProb(n){const el=document.getElementById(`prob_${n}`);if(el)el.remove();}
+
+function getProbs(tipo){
+  return Array.from(document.querySelectorAll(`.prob-card.${tipo}`)).map(el=>{
+    const id=el.id.replace('prob_','');
+    return{
+      prob:(document.getElementById(`p_${id}`)||{}).value||'',
+      estado:(document.getElementById(`e_${id}`)||{}).value||'Activo',
+    };
+  }).filter(p=>p.prob.trim()!=='');
+}
+
+async function generar(){
+  const apiKey=document.getElementById('apiKey').value.trim();
+  if(!apiKey){mostrarError('Ingresa tu API key de OpenRouter en el panel izquierdo.');return;}
+
+  const nombre=document.getElementById('nombre').value.trim();
+  const edad=document.getElementById('edad').value.trim();
+  const sexo=document.getElementById('sexo').value;
+  const diaHosp=document.getElementById('diaHosp').value.trim();
+  const unidad=document.getElementById('unidad').value;
+  const fecha=document.getElementById('fecha').value.trim();
+  const previo=document.getElementById('previo').value.trim();
+  const hoy=document.getElementById('hoy').value.trim();
+  const semioLibre=document.getElementById('semioLibre').value.trim();
+  const diags=getDiags();
+  const semio=getSemio();
+  const probsPsi=getProbs('psi');
+  const probsOrg=getProbs('org');
+
+  if(diags.length===0){mostrarError('Agrega al menos un diagnóstico psiquiátrico.');return;}
+  if(probsPsi.length===0&&probsOrg.length===0){mostrarError('Agrega al menos un problema activo.');return;}
+  if(!hoy&&Object.keys(semio).length===0){mostrarError('Marca hallazgos semiológicos o ingresa observaciones de hoy.');return;}
+  mostrarError('');
+
+  localStorage.setItem('or_key_evolucion',apiKey);
+
+  const btn=document.getElementById('genBtn');
+  btn.disabled=true;btn.innerHTML='<span class="spinning">⟳</span> Generando…';
+
+  const unidadMap={uhcip:'UHCIP / unidad de psiquiatría aguda',enlace:'Psiquiatría de enlace en servicio médico',uci:'UCI / UTI (interconsulta psiquiátrica)',medicina:'Medicina interna',urgencia:'Servicio de urgencia'};
+
+  const diagsStr=diags.map((d,i)=>`  ${i+1}. ${DIAG_LABELS[d.diag]||d.diag}`).join('\n');
+  const semioStr=Object.keys(semio).length>0
+    ?Object.entries(semio).map(([dom,vals])=>`  - ${dom}: ${vals.join(', ')}`).join('\n')
+    :'  (sin hallazgos marcados — derivar del texto de observaciones)';
+  const psiStr=probsPsi.length>0?probsPsi.map((p,i)=>`  ${i+1}. ${p.prob} [Estado: ${p.estado}]`).join('\n'):'  (ninguno registrado)';
+  const orgStr=probsOrg.length>0?probsOrg.map((p,i)=>`  ${i+1}. ${p.prob} [Estado: ${p.estado}]`).join('\n'):'  (ninguno registrado)';
+
+  const prompt=`Eres un psiquiatra clínico experto en psiquiatría hospitalaria y de enlace en el sistema público de salud de Chile, con dominio de las guías GES MINSAL, la psicopatología descriptiva clásica (Jaspers, Schneider, Capponi) y la medicina basada en evidencia.
+
+DATOS DEL PACIENTE:
+- Nombre: ${nombre||'no especificado'}
+- Edad: ${edad||'no especificada'}, sexo ${sexo}
+- Día de hospitalización: ${diaHosp||'no especificado'}
+- Unidad: ${unidadMap[unidad]}
+- Fecha: ${fecha||'hoy'}
+
+DIAGNÓSTICO(S) PSIQUIÁTRICO(S):
+${diagsStr}
+
+HALLAZGOS SEMIOLÓGICOS DE HOY (marcados por el evaluador):
+${semioStr}
+${semioLibre?`  - Otros hallazgos: ${semioLibre}`:''}
+
+PROBLEMAS PSIQUIÁTRICOS ACTIVOS:
+${psiStr}
+
+PROBLEMAS ORGÁNICOS / MÉDICOS ACTIVOS:
+${orgStr}
+
+EVOLUCIÓN PREVIA (examen mental / nota del día anterior):
+${previo||'(Sin evolución previa registrada — corresponde a ingreso o primera evolución)'}
+
+OBSERVACIONES Y CAMBIOS DE HOY:
+${hoy||'(sin observaciones adicionales)'}
+
+INSTRUCCIONES:
+Genera exactamente CUATRO secciones separadas por los siguientes delimitadores exactos, cada uno en su propia línea. NO agregues texto antes del primer delimitador.
+
+---EXAMEN_MENTAL---
+Redacta el examen mental ACTUAL en prosa clínica continua. REGLAS CRÍTICAS:
+1. Los hallazgos semiológicos marcados son OBLIGATORIOS: cada uno debe aparecer en el examen, elaborado con lenguaje psicopatológico técnico y coherente con el diagnóstico (ej: si está marcado "suspicaz" + diagnóstico de psicosis paranoide, descríbelo como "actitud suspicaz con hipervigilancia del entorno, concordante con vivencia paranoide de base").
+2. NO inventes hallazgos que contradigan los marcados. Lo no marcado puedes completarlo de forma neutra y coherente con el diagnóstico.
+3. Si hay evolución previa, MODULA cada hallazgo respecto al estado anterior, señalando explícitamente qué se mantiene, qué mejoró y qué empeoró (ej: "persiste irritable aunque con mejor tolerancia al encuadre que ayer").
+4. El examen debe ser psicopatológicamente coherente con el o los diagnósticos indicados.
+Estructura: presentación, psicomotilidad, actitud, lenguaje, afectividad, pensamiento (curso y contenido), sensopercepción, suicidalidad, conciencia/orientación cuando sea relevante, ritmos biológicos según lo reportado, insight. 3-4 párrafos, tercera persona.
+
+---PROBLEMAS_PSIQUIATRICOS---
+Para CADA problema psiquiátrico listado:
+[Número]. [Nombre del problema] — [Estado]
+Análisis: evolución del problema integrando lo previo, la semiología de hoy y las observaciones (2-4 oraciones).
+Plan: acciones concretas para las próximas 24-48h — ajustes farmacológicos con dosis si corresponde, monitorización, intervenciones de enfermería, evaluaciones pendientes, criterios de alerta.
+
+---PROBLEMAS_ORGANICOS---
+Para CADA problema orgánico listado, mismo formato:
+[Número]. [Nombre del problema] — [Estado]
+Análisis: estado actual e interacción con el cuadro psiquiátrico si la hay (delirium, interacciones farmacológicas, contraindicaciones).
+Plan: exámenes, interconsultas, manejo, vigilancia. Si el manejo es de otra especialidad, señala qué debe vigilar psiquiatría.
+Si no hay problemas orgánicos registrados, escribe solo: "Sin problemas orgánicos activos registrados en esta evolución."
+
+---PLAN_GENERAL---
+Síntesis del día en 3-6 líneas: impresión global (mejoría/estabilidad/retroceso), prioridades de las próximas 24-48 horas, criterios de pre-alta o ajuste de nivel de cuidados si corresponde, pendientes. Cierra recordando que estas sugerencias deben ser validadas por el médico tratante.`;
+
+  const outArea=document.getElementById('outputArea');
+  const outEx=document.getElementById('outExamen');
+  const outPsi=document.getElementById('outPsi');
+  const outOrg=document.getElementById('outOrg');
+  const outPlan=document.getElementById('outPlan');
+
+  outArea.classList.add('visible');
+  [outEx,outPsi,outOrg,outPlan].forEach(o=>{o.textContent='';o.classList.add('streaming');});
+  outArea.scrollIntoView({behavior:'smooth',block:'start'});
+
+  try{
+    const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${apiKey}`,
+        'HTTP-Referer':'https://niconaish.github.io',
+        'X-Title':'Evolucion Hospitalaria Psiquiatrica'
+      },
+      body:JSON.stringify({
+        model:'openrouter/auto',
+        stream:true,
+        max_tokens:3800,
+        temperature:0.3,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+
+    if(!res.ok){
+      const err=await res.json().catch(()=>({}));
+      throw new Error(err?.error?.message||`Error HTTP ${res.status}`);
+    }
+
+    const reader=res.body.getReader();
+    const decoder=new TextDecoder();
+    let buffer='',fullText='';
+
+    while(true){
+      const{done,value}=await reader.read();
+      if(done)break;
+      buffer+=decoder.decode(value,{stream:true});
+      const lines=buffer.split('\n');buffer=lines.pop();
+      for(const line of lines){
+        if(!line.startsWith('data: '))continue;
+        const data=line.slice(6).trim();
+        if(data==='[DONE]')break;
+        try{
+          const json=JSON.parse(data);
+          const chunk=json?.choices?.[0]?.delta?.content||'';
+          if(chunk){
+            fullText+=chunk;
+            const ex=extraerFlex(fullText,['---EXAMEN_MENTAL---','EXAMEN_MENTAL','EXAMEN MENTAL'],['---PROBLEMAS_PSIQUIATRICOS---','PROBLEMAS_PSIQUIATRICOS','PROBLEMAS PSIQUIÁTRICOS','PROBLEMAS PSIQUIATRICOS']);
+            const ps=extraerFlex(fullText,['---PROBLEMAS_PSIQUIATRICOS---','PROBLEMAS_PSIQUIATRICOS','PROBLEMAS PSIQUIÁTRICOS','PROBLEMAS PSIQUIATRICOS'],['---PROBLEMAS_ORGANICOS---','PROBLEMAS_ORGANICOS','PROBLEMAS ORGÁNICOS','PROBLEMAS ORGANICOS']);
+            const og=extraerFlex(fullText,['---PROBLEMAS_ORGANICOS---','PROBLEMAS_ORGANICOS','PROBLEMAS ORGÁNICOS','PROBLEMAS ORGANICOS'],['---PLAN_GENERAL---','PLAN_GENERAL','PLAN GENERAL']);
+            const pl=extraerFlex(fullText,['---PLAN_GENERAL---','PLAN_GENERAL','PLAN GENERAL'],null);
+            if(ex!==null)outEx.textContent=ex.trim();
+            if(ps!==null)outPsi.textContent=ps.trim();
+            if(og!==null)outOrg.textContent=og.trim();
+            if(pl!==null)outPlan.textContent=pl.trim();
+          }
+        }catch(e){}
+      }
+    }
+    [outEx,outPsi,outOrg,outPlan].forEach(o=>o.classList.remove('streaming'));
+  }catch(err){
+    mostrarError(`Error: ${err.message}`);
+    outArea.classList.remove('visible');
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='✦ Generar evolución del día';
+  }
+}
+
+function extraerFlex(texto,inicios,fins){
+  let desde=-1;
+  for(const ini of inicios){
+    const i=texto.indexOf(ini);
+    if(i!==-1){desde=i+ini.length;break;}
+  }
+  if(desde===-1)return null;
+  if(!fins)return texto.slice(desde);
+  for(const fin of fins){
+    const j=texto.indexOf(fin,desde);
+    if(j!==-1)return texto.slice(desde,j);
+  }
+  return texto.slice(desde);
+}
+
+function mostrarError(msg){const el=document.getElementById('errMsg');el.style.display=msg?'block':'none';el.textContent=msg;}
+
+async function copiar(id,btnId){
+  await navigator.clipboard.writeText(document.getElementById(id).textContent);
+  const btn=document.getElementById(btnId);
+  btn.textContent='✓ Copiado';btn.classList.add('done');
+  setTimeout(()=>{btn.innerHTML='⎘ Copiar';btn.classList.remove('done');},2000);
+}
+
+async function copiarTodo(){
+  const fecha=document.getElementById('fecha').value.trim();
+  const diaHosp=document.getElementById('diaHosp').value.trim();
+  const texto=`EVOLUCIÓN PSIQUIÁTRICA${fecha?' — '+fecha:''}${diaHosp?' ('+diaHosp+' de hospitalización)':''}
+
+EXAMEN MENTAL:
+${document.getElementById('outExamen').textContent}
+
+PROBLEMAS PSIQUIÁTRICOS:
+${document.getElementById('outPsi').textContent}
+
+PROBLEMAS ORGÁNICOS:
+${document.getElementById('outOrg').textContent}
+
+SÍNTESIS Y PLAN:
+${document.getElementById('outPlan').textContent}`;
+  await navigator.clipboard.writeText(texto);
+  const btn=document.querySelector('.copy-all-btn');
+  const orig=btn.textContent;
+  btn.textContent='✓ Evolución completa copiada';
+  setTimeout(()=>{btn.textContent=orig;},2000);
+}
+
+init();
+</script>
+</body>
+</html>
