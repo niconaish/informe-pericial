@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Informe Pericial Psiquiátrico – Superintendencia de Pensiones</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --bg:#f4f3f0;--surface:#fff;--surface2:#f9f8f6;--border:#e0ddd8;--border2:#d0cdc8;
+    --text:#1a1916;--text2:#5a5753;--text3:#9a9693;
+    --accent:#1a3a5c;--accent-light:#e8eef5;
+    --green:#1a5c3a;--green-bg:#e8f5ee;--red:#5c1a1a;--red-bg:#f5e8e8;
+    --blue-bg:#e8ecf5;--font:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--radius:6px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;}
+  .shell{display:grid;grid-template-columns:290px 1fr;min-height:100vh;}
+  .sidebar{background:var(--accent);color:#fff;padding:28px 20px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+  .sidebar-logo{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:6px;}
+  .sidebar-title{font-size:15px;font-weight:600;color:#fff;line-height:1.35;margin-bottom:4px;}
+  .sidebar-sub{font-size:11px;color:rgba(255,255,255,.55);margin-bottom:28px;line-height:1.5;}
+  .sidebar-section{margin-bottom:22px;}
+  .sidebar-label{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:8px;}
+  .api-input-wrap{position:relative;}
+  .api-input{width:100%;padding:8px 36px 8px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:var(--radius);font-family:var(--mono);font-size:11px;color:#fff;letter-spacing:.05em;}
+  .api-input::placeholder{color:rgba(255,255,255,.3);}
+  .api-input:focus{outline:none;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.15);}
+  .api-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);font-size:13px;padding:2px;}
+  .api-toggle:hover{color:#fff;}
+  .api-hint{font-size:10px;color:rgba(255,255,255,.35);margin-top:6px;line-height:1.6;}
+  .api-hint a{color:rgba(255,255,255,.65);text-decoration:underline;}
+  .step-list{list-style:none;padding:0;}
+  .step-list li{font-size:11px;color:rgba(255,255,255,.6);margin-bottom:9px;padding-left:22px;position:relative;line-height:1.5;}
+  .step-list li::before{content:attr(data-n);position:absolute;left:0;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.35);}
+  .step-list li a{color:rgba(255,255,255,.75);text-decoration:underline;}
+  .sidebar-footer{margin-top:auto;padding-top:20px;border-top:1px solid rgba(255,255,255,.1);font-size:10px;color:rgba(255,255,255,.3);line-height:1.6;}
+  .main{padding:32px 36px;max-width:860px;}
+  .section-title{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:16px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-size:11px;font-weight:500;color:var(--text2);letter-spacing:.03em;}
+  input[type=text],select,textarea{font-family:var(--font);font-size:13px;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;width:100%;transition:border-color .15s;}
+  input[type=text]:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);background:#fff;}
+  textarea{resize:vertical;min-height:130px;line-height:1.6;}
+  .diag-list{display:flex;flex-direction:column;gap:10px;margin-bottom:12px;}
+  .diag-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
+  .diag-card-head{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+  .diag-num{font-family:var(--mono);font-size:10px;background:var(--accent);color:#fff;border-radius:3px;padding:2px 7px;letter-spacing:.05em;}
+  .diag-remove{margin-left:auto;font-size:11px;padding:3px 10px;background:transparent;border:1px solid var(--border2);border-radius:var(--radius);cursor:pointer;color:var(--text2);font-family:var(--font);}
+  .diag-remove:hover{background:var(--red-bg);color:var(--red);border-color:#f0c0c0;}
+  .norm-hint{font-size:11px;color:var(--text2);background:var(--blue-bg);border:1px solid #c0ccdf;border-radius:var(--radius);padding:7px 10px;margin-top:8px;line-height:1.55;display:none;}
+  .norm-hint.on{display:block;}
+  .norm-hint strong{color:var(--accent);}
+  .add-diag-btn{font-size:12px;font-family:var(--font);padding:7px 14px;background:var(--accent-light);border:1px solid #c0ccdf;border-radius:var(--radius);cursor:pointer;color:var(--accent);font-weight:500;display:inline-flex;align-items:center;gap:5px;transition:background .15s;}
+  .add-diag-btn:hover{background:#d8e4f0;}
+  .razones-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .razon-chip{display:flex;align-items:flex-start;gap:8px;padding:9px 11px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:12px;color:var(--text2);line-height:1.45;background:var(--surface2);transition:all .12s;user-select:none;}
+  .razon-chip input{margin-top:1px;flex-shrink:0;accent-color:var(--accent);}
+  .razon-chip:hover{border-color:var(--border2);background:var(--surface);}
+  .razon-chip.sel{border-color:#a0b4cc;background:var(--accent-light);color:var(--accent);}
+  .gen-btn{width:100%;padding:13px;font-size:14px;font-weight:600;font-family:var(--font);background:var(--accent);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;letter-spacing:.02em;transition:background .15s,opacity .15s;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .gen-btn:hover{background:#122d4a;}
+  .gen-btn:disabled{opacity:.5;cursor:not-allowed;}
+  .err-msg{margin-top:10px;font-size:12px;color:var(--red);background:var(--red-bg);border:1px solid #f0c0c0;border-radius:var(--radius);padding:8px 12px;display:none;line-height:1.5;}
+  .output-area{display:none;margin-top:28px;}
+  .output-area.visible{display:block;}
+  .tags-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+  .tag{font-size:11px;font-family:var(--mono);padding:3px 9px;border-radius:3px;font-weight:500;letter-spacing:.03em;}
+  .tag.cfg{background:var(--green-bg);color:var(--green);}
+  .tag.nocfg{background:var(--red-bg);color:var(--red);}
+  .out-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:14px;}
+  .out-block-title{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:14px;}
+  .out-text{font-size:13.5px;color:var(--text);line-height:1.85;white-space:pre-wrap;font-family:var(--font);}
+  .out-text.streaming::after{content:'▌';animation:blink .7s steps(1) infinite;color:var(--accent);}
+  @keyframes blink{50%{opacity:0;}}
+  .copy-btn{margin-top:14px;font-size:11px;font-family:var(--font);padding:5px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;color:var(--text2);font-weight:500;display:inline-flex;align-items:center;gap:5px;transition:all .12s;}
+  .copy-btn:hover{background:var(--accent-light);color:var(--accent);border-color:#b0c4dc;}
+  .copy-btn.done{background:var(--green-bg);color:var(--green);border-color:#a0c4b0;}
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  .spinning{display:inline-block;animation:spin .8s linear infinite;}
+  .hint{font-size:11px;color:var(--text3);margin-top:5px;line-height:1.5;}
+  ::-webkit-scrollbar{width:6px;}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<aside class="sidebar">
+  <div class="sidebar-logo">Superintendencia de Pensiones</div>
+  <div class="sidebar-title">Informe Pericial Psiquiátrico</div>
+  <div class="sidebar-sub">Normas 9ª edición (2026) – D.O. 02.02.2026<br>Vigentes desde 01.08.2026 · Cap. XI – Impedimentos Mentales<br>Motor: OpenRouter – Llama 3.3 70B (gratuito)</div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">API Key de OpenRouter</div>
+    <div class="api-input-wrap">
+      <input type="password" id="apiKey" class="api-input" placeholder="sk-or-v1-…"/>
+      <button class="api-toggle" onclick="toggleKey()" title="Mostrar/ocultar">👁</button>
+    </div>
+    <div class="api-hint">Tu clave se guarda solo en este navegador y nunca sale de tu computador.</div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Cómo obtener tu clave gratis</div>
+    <ul class="step-list">
+      <li data-n="1">Ve a <a href="https://openrouter.ai" target="_blank">openrouter.ai</a></li>
+      <li data-n="2">Clic en <strong>"Sign in"</strong> → usa tu cuenta Gmail</li>
+      <li data-n="3">Una vez dentro, ve a <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a></li>
+      <li data-n="4">Clic en <strong>"Create Key"</strong>, ponle cualquier nombre</li>
+      <li data-n="5">Copia la clave (empieza con <strong>sk-or-v1-</strong>) y pégala arriba</li>
+    </ul>
+  </div>
+
+  <div class="sidebar-footer">
+    Modelo: Llama 3.3 70B (gratuito)<br>
+    Plan gratuito: sin tarjeta de crédito<br>
+    Clave guardada automáticamente
+  </div>
+</aside>
+
+<main class="main">
+
+  <div class="section-title">01 — Identificación</div>
+  <div class="card">
+    <div class="row3" style="margin-bottom:12px">
+      <div class="field"><label>Nombre evaluado/a</label><input type="text" id="nombre" placeholder="Nombre completo"/></div>
+      <div class="field"><label>N° expediente</label><input type="text" id="expediente" placeholder="Ej: 2625947994"/></div>
+      <div class="field"><label>Comisión médica</label><input type="text" id="comision" placeholder="Ej: Temuco"/></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label>Edad</label><input type="text" id="edad" placeholder="Ej: 45 años"/></div>
+      <div class="field"><label>Sexo</label>
+        <select id="sexo"><option value="femenino">Femenino</option><option value="masculino">Masculino</option></select>
+      </div>
+      <div class="field"><label>Modalidad de evaluación</label>
+        <select id="modalidad"><option value="videollamada">Videollamada</option><option value="presencial">Presencial</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">02 — Diagnósticos e impedimentos</div>
+  <div class="diag-list" id="diagList"></div>
+  <button class="add-diag-btn" onclick="addDiag()">＋ Agregar diagnóstico</button>
+
+  <div class="section-title" style="margin-top:28px">03 — Razones de no configuración</div>
+  <div class="card">
+    <div class="razones-grid" id="razonesGrid"></div>
+    <p class="hint" style="margin-top:10px">Selecciona todas las que apliquen. Si todos los impedimentos se configuran, deja esto en blanco.</p>
+  </div>
+
+  <div class="section-title">04 — Notas clínicas de la consulta</div>
+  <div class="card">
+    <textarea id="notas" placeholder="Pega o escribe tus apuntes de la entrevista: antecedentes personales, familiares, laborales, síntomas referidos, fármacos actuales, hallazgos del examen, interferencia en AVD, etc."></textarea>
+    <p class="hint">El modelo integra tus notas con el marco normativo para generar el informe en el estilo del interconsultor.</p>
+  </div>
+
+  <button class="gen-btn" id="genBtn" onclick="generar()">✦ Generar examen mental y conclusiones</button>
+  <div class="err-msg" id="errMsg"></div>
+
+  <div class="output-area" id="outputArea">
+    <div class="section-title" style="margin-top:28px">05 — Resultado generado</div>
+    <div class="tags-row" id="tagsOut"></div>
+    <div class="out-block">
+      <div class="out-block-title">Examen mental</div>
+      <div class="out-text streaming" id="outExamen"></div>
+      <button class="copy-btn" id="copyEx" onclick="copiar('outExamen','copyEx')">⎘ Copiar texto</button>
+    </div>
+    <div class="out-block">
+      <div class="out-block-title">Conclusiones del interconsultor</div>
+      <div class="out-text streaming" id="outConclusiones"></div>
+      <button class="copy-btn" id="copyCo" onclick="copiar('outConclusiones','copyCo')">⎘ Copiar texto</button>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+const GRUPOS=[{val:'A',label:'Grupo A – Trastornos mentales orgánicos y trastornos somáticos'},{val:'B',label:'Grupo B – Trastornos mentales y del comportamiento por sustancias psicoactivas'},{val:'C',label:'Grupo C – Esquizofrenia, trastornos esquizotípicos y trastornos delirantes'},{val:'D',label:'Grupo D – Trastornos del humor'},{val:'E',label:'Grupo E – Trastornos neuróticos, relacionados a estrés y somatomorfos'},{val:'F',label:'Grupo F – Trastornos de personalidad y del comportamiento en adultos'},{val:'G_RM',label:'Grupo G – Trastorno del desarrollo intelectual'},{val:'G_TEA',label:'Grupo G – Trastorno del espectro autista / Síndrome de Asperger'}];
+const DIAGS={A:[{v:'demencia_leve',l:'Deterioro cognitivo / demencia leve'},{v:'demencia_moderada',l:'Deterioro cognitivo / demencia moderada'},{v:'demencia_severa',l:'Deterioro cognitivo / demencia severa'},{v:'sindrome_organico',l:'Síndrome orgánico cerebral'},{v:'sindrome_amnesico',l:'Síndrome amnésico orgánico'},{v:'tp_organico',l:'Trastorno orgánico de la personalidad'},{v:'tmo_otro',l:'Otro trastorno mental orgánico o somático'}],B:[{v:'dep_alcohol',l:'Dependencia al alcohol'},{v:'dep_opioides',l:'Dependencia a opioides'},{v:'dep_cannabis',l:'Dependencia a cannabinoides'},{v:'dep_sedantes',l:'Dependencia a sedantes o hipnóticos'},{v:'dep_cocaina',l:'Dependencia a cocaína / pasta base'},{v:'dep_alucinogenos',l:'Dependencia a alucinógenos'},{v:'dep_disolventes',l:'Dependencia a disolventes volátiles'},{v:'pol_sustancias',l:'Politoxicomanía / uso de múltiples drogas'},{v:'abuso_alcohol',l:'Consumo perjudicial de alcohol (sin dependencia)'},{v:'abuso_drogas',l:'Consumo perjudicial de drogas (sin dependencia)'},{v:'sindrome_abstinencia',l:'Síndrome de abstinencia'},{v:'trastorno_inducido',l:'Trastorno mental inducido por sustancias (psicosis, amnésico, demencial)'}],C:[{v:'esquizofrenia',l:'Esquizofrenia'},{v:'esquizotipico',l:'Trastorno esquizotípico'},{v:'psicosis_lucida',l:'Psicosis lúcida (prob. origen esquizofrénico)'},{v:'trastorno_delirante',l:'Trastorno delirante persistente (paranoia)'},{v:'delirante_inducido',l:'Trastorno delirante inducido'},{v:'esquizoafectivo',l:'Trastorno esquizoafectivo'},{v:'psicosis_aguda',l:'Psicosis aguda no orgánica'}],D:[{v:'depresion_leve',l:'Episodio depresivo leve'},{v:'depresion_moderada',l:'Episodio depresivo moderado'},{v:'depresion_severa',l:'Episodio depresivo severo'},{v:'depresion_recurrente',l:'Trastorno depresivo recurrente'},{v:'episodio_maniaco',l:'Episodio maníaco'},{v:'bipolar',l:'Trastorno afectivo bipolar'},{v:'distimia',l:'Distimia / trastorno del humor persistente'},{v:'ciclotimia',l:'Ciclotimia'}],E:[{v:'adaptacion',l:'Trastorno de adaptación'},{v:'ansiedad',l:'Trastorno de ansiedad generalizada'},{v:'fobia',l:'Trastorno fóbico / agorafobia'},{v:'tep',l:'Reacción al estrés grave / TEP'},{v:'ocd',l:'Trastorno obsesivo-compulsivo'},{v:'somatoforme',l:'Trastorno somatoforme'},{v:'disociativo',l:'Trastorno disociativo / de conversión'},{v:'alimentacion',l:'Trastorno de la ingestión de alimentos'},{v:'sueno_no_organico',l:'Trastorno no orgánico del sueño'},{v:'disfuncion_sexual',l:'Disfunción sexual'},{v:'puerperal',l:'Trastorno mental puerperal'}],F:[{v:'tp_limitrofe',l:'Trastorno de personalidad limítrofe'},{v:'tp_histrionico',l:'Trastorno de personalidad histriónico'},{v:'tp_paranoide',l:'Trastorno de personalidad paranoide'},{v:'tp_antisocial',l:'Trastorno de personalidad antisocial'},{v:'tp_mixto',l:'Trastorno mixto de la personalidad'},{v:'cambio_personalidad',l:'Cambio de personalidad (no debido a lesión/enf. cerebral)'},{v:'tp_otro',l:'Trastorno de personalidad (otro)'}],G_RM:[{v:'rm_leve',l:'Trastorno del desarrollo intelectual leve (CI 50-70)'},{v:'rm_moderado',l:'Trastorno del desarrollo intelectual moderado (CI 35-49)'},{v:'rm_grave',l:'Trastorno del desarrollo intelectual grave (CI < 35)'},{v:'rm_profundo',l:'Trastorno del desarrollo intelectual profundo (CI < 20)'}],G_TEA:[{v:'tea_asperger',l:'Síndrome de Asperger / TEA leve (Clase I)'},{v:'tea_moderado',l:'TEA moderado (Clase II)'},{v:'tea_importante',l:'TEA con dificultades importantes (Clase III)'},{v:'tea_severo',l:'TEA severo (Clase IV)'},{v:'tea_muy_severo',l:'TEA muy severo, sin interacción social efectiva (Clase V)'}]};
+const NORMAS={A:{I:{r:'1–7–14%',c:'Daño leve en funciones complejas integradas del cerebro comparado con capacidades premórbidas. Interferencia mínima en AVD. Compromiso leve de memoria de trabajo.'},II:{r:'15–25–34%',c:'Compromiso de memoria reciente, mayor dificultad y lentificación del pensamiento, disminución de atención y comprensión. Compromiso moderado de memoria de trabajo, procesa mal información nueva. AVD que requieren destreza (conducir, operar herramientas/maquinaria) interferidas. Descuido del aspecto personal; controla impulsos.'},III:{r:'35–42–49%',c:'Daño importante en funciones complejas integradas. Dificultades con la mayoría de AVD; puede requerir supervisión. En rango alto: supervisión frecuente pero no permanente para aseo, vestimenta y desplazamiento.'},IV:{r:'50–58–66%',c:'Compromiso severo de funciones complejas integradas. Requiere supervisión y cuidado para las AVD.'},V:{r:'67–74–80%',c:'Compromiso grave. Requiere asistencia en todas las AVD. Permanece confinado.'}},B:{I:{r:'1–7–14%',c:'Patrón de consumo nocivo con intoxicaciones frecuentes, sin dependencia. Interferencia ocasional en AVD por complicaciones somáticas (intoxicación aguda, gastritis, cefalea) que requieren control médico ambulatorio. Mantiene eficiencia social y laboral.'},II:{r:'15–25–34%',c:'Consumo nocivo con intoxicación habitual que interfiere el funcionamiento normal, sin dependencia. AVD que requieren destreza (conducir, operar herramientas/maquinaria) interferidas moderadamente.'},III:{r:'35–42–49%',c:'Consumo nocivo con intoxicaciones inveteradas o intermitentes que interfieren el trabajo en rendimiento y/o estabilidad. Dependencia con antecedente de síndrome de abstinencia. En rango alto: complicaciones físicas/mentales importantes, AVD interferidas de forma importante, puede requerir supervisión, ausentismo laboral reiterado.'},IV:{r:'50–58–66%',c:'Síndrome de dependencia grave con problemas mentales, físicos, legales o familiares derivados del consumo. Rango bajo: consumo persiste pese a tratamiento y complicaciones sociofamiliares graves, con alguna estabilidad laboral. Rango medio: complicaciones físicas/mentales graves potencialmente reversibles (epilepsia, psicosis). Rango alto: complicaciones irreversibles (daño orgánico cerebral, cirrosis) y/o requiere supervisión constante; la abstinencia actual no invalida el otorgamiento si la complicación irreversible ya está presente.'}},C:{I:{r:'1–7–14%',c:'Síntomas predominantemente negativos o deficitarios; pueden existir alteraciones leves de la percepción y peculiaridades del pensamiento, con juicio de realidad sutilmente alterado. Sin síntomas positivos o éstos encapsulados. No perturba su entorno; AVD con interferencias leves determinadas principalmente por eficiencia social. En control médico ambulatorio.'},II:{r:'15–25–34%',c:'Conductas peculiares no disruptivas para el entorno. Alteraciones moderadas de percepción y pensamiento; la conducta se desordena con frecuencia. Descuida el aspecto personal; destrezas sociales y de comunicación disminuidas. Requiere control ambulatorio y ocasionalmente consultas de urgencia.'},III:{r:'35–42–49%',c:'Alteraciones importantes en pensamiento y percepción de la realidad; descuido en hábitos y vocabulario, incontinencia emocional, pérdida de destrezas sociales y de comunicación. Puede realizar trabajos rutinarios con interacción social mínima; puede requerir supervisión en actividades sociales e instigación en AVD esenciales y domésticas sin pérdida de autonomía. En rango alto, respuesta parcial a tratamiento supervisado; puede haber requerido hospitalizaciones; evidencia de esquizofrenia defectual/residual con sintomatología negativa importante.'},IV:{r:'50–58–66%',c:'Pensamiento desestructurado, percibe erróneamente la realidad. Severo desajuste conductual, mal cuidado personal, debe ser vigilado por síntomas negativos o positivos severos que impiden desenvolverse socialmente de forma efectiva (la ausencia de red de apoyo para la supervisión no descarta esta clase). Las 4 áreas de AVD severamente interferidas; consultas de urgencia frecuentes; ha requerido hospitalizaciones.'},V:{r:'67–74–80%',c:'Desorden del pensar, juicio de realidad, comportamiento social y control emocional totalmente fuera de manejo ambulatorio. Requiere supervisión permanente y/o confinamiento. Las 4 áreas de AVD gravemente interferidas.'}},D:{I:{r:'1–7–14%',c:'Síndrome hipomaníaco y/o depresión leve, con normalidad entre episodios. Leve interferencia en AVD; puede requerir reposo laboral una vez por año. Pese a tratamiento, nuevos episodios con incapacidad laboral ≤ 6 semanas.'},II:{r:'15–25–34%',c:'Hipomanía/depresión moderada, sin hospitalización. Pese a tratamiento permanente, hasta 2 episodios moderados al año con remisión parcial o total entre episodios que permiten mantener estabilidad laboral.'},III:{r:'35–42–49%',c:'Depresión, manía o síndrome mixto importante; requiere supervisión en las crisis, con normalidad entre episodios (hasta 3 al año). Interferencia importante en AVD. En rango alto: interferencia social/laboral frecuente, síntomas gran parte del año o sintomatología permanente pese a tratamiento continuo a dosis máxima accesible.'},IV:{r:'50–58–66%',c:'Depresión, manía y/o síndrome mixto severo, con o sin síntomas psicóticos. En períodos intercríticos conserva autonomía pero con interferencia habitual/permanente por síntomas residuales o efectos colaterales del tratamiento; en períodos críticos, interferencia severa. Ha requerido hospitalización con síntomas gran parte del año. En rango alto, AVD requieren supervisión constante en períodos críticos.'},V:{r:'67–74–80%',c:'Depresión grave, síndrome maníaco grave y/o síndrome mixto grave, con o sin síntomas psicóticos. Sin normalidad entre episodios; sin autonomía; requiere supervisión constante y, en rango alto, está confinado.'}},E:{I:{r:'1–7–14%',c:'Usa mecanismos de protección regresivos psiconeuróticos frente a las tensiones del diario vivir, sin perder eficiencia personal y social. Requiere controles periódicos de la especialidad.'},II:{r:'15–25–34%',c:'Reacciones psiconeuróticas moderadas en la adaptación a tensiones del diario vivir, y/o patologías en órganos o miembros que comprometen ocasionalmente la eficiencia personal y social. Interferencia moderada y ocasional en lo laboral; controles periódicos de especialidad.'},III:{r:'35–42–49%',c:'Reacciones psiconeuróticas importantes y/o inducción de patologías en órganos o miembros. Requiere control continuo de especialidad. En rango alto, AVD restringidas, con posible necesidad de apoyo continuo o supervisión en resolución de conflictos y adaptación a situaciones de tensión.'},IV:{r:'50–58–66%',c:'Reacciones psiconeuróticas severas y catastrofales, con patologías en órganos o miembros fuera de control; puede haber depresión, desinterés, ideación suicida y aislamiento. En rango alto necesita supervisión, es dependiente de terceros en desplazamiento y otras actividades esenciales/domésticas, incapacitado para cualquier trabajo.'}},F:{I:{r:'1–7–14%',c:'Discernimiento pobre y dificultad para el control y juicio del comportamiento personal, con dificultades ocasionales para resolver conflictos interpersonales. Habilidad para evitar perturbaciones serias en sus relaciones y sin daño significativo a sí misma. Historia afectiva y laboral de estabilidad.'},II:{r:'15–25–34%',c:'Pérdida permanente del autocontrol ante conflictos y frustraciones; mal control del comportamiento, no aprende de la experiencia, conducta perturbadora para el entorno; puede dañar a terceros o a sí misma. Dificultades frecuentes para resolver conflictos interpersonales. Historia afectiva y laboral inestable, con quiebres afectivos y cambios de trabajo frecuentes y de escasa duración.'},III:{r:'35–42–49%',c:'Conducta perturbadora por irresponsabilidad ante normas, reglas y responsabilidades sociales; descargos de agresividad y conductas violentas; incapacidad para sentir culpa. Historia afectiva de alta inestabilidad, trabajos inestables y de corta duración con despidos frecuentes por conflictos interpersonales, dependencia de terceros o rigidez extrema. Interferencia importante en AVD de eficiencia social, con posible necesidad de supervisión por riesgo para sí misma o terceros.'}},G_RM:{I:{r:'1–15–29%',c:'Retraso del desarrollo intelectual leve (CI referencial 50-70). Puede presentar dificultad leve del lenguaje sin interferir en su funcionalidad; capacidad de relacionarse socialmente; conoce el valor del dinero y usa tecnología. Independiente en la mayor parte de las AVD, desplazamientos y cuidado personal; puede desarrollar actividad manual no especializada; logra estabilidad en relaciones interpersonales, pudiendo formar familia.'},II:{r:'30–40–49%',c:'Retraso del desarrollo intelectual moderado (CI referencial 35-49). Capacidad de relacionarse socialmente; puede conocer el valor del dinero pero con dificultades de uso. Requiere alguna supervisión en algunas AVD (desplazamientos indicados, tareas asignadas y supervisadas con relativa frecuencia); logra trabajos simples, esporádicos y bajo supervisión de terceros.'},III:{r:'50–58–66%',c:'Retraso del desarrollo intelectual severo (CI < 35). Requiere supervisión y dirección o instigación para actividades básicas de la vida diaria; puede aprender y seguir instrucciones simples; no conoce el valor del dinero; no puede actuar ante situaciones de peligro ni protegerse a sí mismo.'},IV:{r:'67–74–80%',c:'Trastorno del desarrollo intelectual profundo (CI < 20). Escaso desarrollo de lenguaje y comunicación básica; incapacidad para comprender instrucciones; sin rendimiento cognitivo, sin lenguaje, habitualmente en postración. No puede ocuparse de su cuidado personal, debe ser aseado y alimentado; totalmente dependiente y habitualmente confinado en su hogar o una institución; sólo comprende órdenes básicas y necesita vigilancia.'}},G_TEA:{I:{r:'1–7–14%',c:'Dificultades leves de interacción social que no interfieren en su funcionalidad, con intereses/actividades/patrones conductuales repetitivos y estereotipados. Sin déficits o retrasos del lenguaje ni déficits cognitivos. Independiente en la mayor parte de las AVD.'},II:{r:'15–25–34%',c:'Dificultades moderadas de interacción social que interfieren ocasionalmente en su funcionalidad, con intereses/actividades repetitivas y estereotipadas. Alteraciones de comunicación, déficits del lenguaje o cognitivos de carácter leve (funcionalidad equivalente a Clase I de Trastorno del desarrollo intelectual). Requiere asistencia ocasional en algunas AVD, manteniendo independencia en la mayor parte.'},III:{r:'34–42–49%',c:'Dificultades importantes en la interacción social que interfieren frecuentemente en su funcionalidad. Déficits o retrasos del lenguaje o cognitivos de carácter importante (equivalente a Clase II de Trastorno del desarrollo intelectual). Requiere asistencia frecuente en las AVD; no tiene independencia en la mayor parte de ellas.'},IV:{r:'50–58–66%',c:'Dificultades severas en la interacción social que interfieren en su funcionalidad, con necesidad de supervisión. Déficits o retrasos del lenguaje o cognitivos de carácter severo (equivalente a Clase III de Trastorno del desarrollo intelectual). Requiere asistencia en todas las AVD, sin autonomía.'},V:{r:'67–74–80%',c:'No existe interacción social efectiva. Déficits o retrasos del lenguaje o cognitivos de carácter grave (equivalente a Trastorno del desarrollo intelectual profundo). Tiene total dependencia de terceros.'}}};
+const DIAG_LABELS={dep_alcohol:'Dependencia al alcohol (Grupo B)',dep_opioides:'Dependencia a opioides (Grupo B)',dep_cannabis:'Dependencia a cannabinoides (Grupo B)',dep_sedantes:'Dependencia a sedantes o hipnóticos (Grupo B)',dep_cocaina:'Dependencia a cocaína / pasta base (Grupo B)',dep_alucinogenos:'Dependencia a alucinógenos (Grupo B)',dep_disolventes:'Dependencia a disolventes volátiles (Grupo B)',pol_sustancias:'Politoxicomanía / uso de múltiples drogas (Grupo B)',abuso_alcohol:'Consumo perjudicial de alcohol, sin dependencia (Grupo B)',abuso_drogas:'Consumo perjudicial de drogas, sin dependencia (Grupo B)',sindrome_abstinencia:'Síndrome de abstinencia (Grupo B)',trastorno_inducido:'Trastorno mental inducido por sustancias (Grupo B)',demencia_leve:'Trastorno mental orgánico – deterioro cognitivo leve (Grupo A)',demencia_moderada:'Trastorno mental orgánico – deterioro cognitivo moderado (Grupo A)',demencia_severa:'Trastorno mental orgánico – deterioro cognitivo severo (Grupo A)',sindrome_organico:'Síndrome orgánico cerebral (Grupo A)',sindrome_amnesico:'Síndrome amnésico orgánico (Grupo A)',tp_organico:'Trastorno orgánico de la personalidad (Grupo A)',tmo_otro:'Otro trastorno mental orgánico o somático (Grupo A)',esquizofrenia:'Esquizofrenia (Grupo C)',esquizotipico:'Trastorno esquizotípico (Grupo C)',psicosis_lucida:'Psicosis lúcida de probable origen esquizofrénico crónico (Grupo C)',trastorno_delirante:'Trastorno delirante persistente / paranoia (Grupo C)',delirante_inducido:'Trastorno delirante inducido (Grupo C)',esquizoafectivo:'Trastorno esquizoafectivo (Grupo C)',psicosis_aguda:'Psicosis aguda no orgánica (Grupo C)',depresion_leve:'Episodio depresivo leve (Grupo D)',depresion_moderada:'Episodio depresivo moderado (Grupo D)',depresion_severa:'Episodio depresivo severo (Grupo D)',depresion_recurrente:'Trastorno depresivo recurrente (Grupo D)',episodio_maniaco:'Episodio maníaco (Grupo D)',bipolar:'Trastorno afectivo bipolar (Grupo D)',distimia:'Distimia / trastorno del humor persistente (Grupo D)',ciclotimia:'Ciclotimia (Grupo D)',adaptacion:'Trastorno de adaptación (Grupo E)',ansiedad:'Trastorno de ansiedad generalizada (Grupo E)',fobia:'Trastorno fóbico / agorafobia (Grupo E)',tep:'Reacción al estrés grave / trastorno por estrés postraumático (Grupo E)',ocd:'Trastorno obsesivo-compulsivo (Grupo E)',somatoforme:'Trastorno somatoforme (Grupo E)',disociativo:'Trastorno disociativo / de conversión (Grupo E)',alimentacion:'Trastorno de la ingestión de alimentos (Grupo E)',sueno_no_organico:'Trastorno no orgánico del sueño (Grupo E)',disfuncion_sexual:'Disfunción sexual (Grupo E)',puerperal:'Trastorno mental puerperal (Grupo E)',tp_limitrofe:'Trastorno de personalidad limítrofe (Grupo F)',tp_histrionico:'Trastorno de personalidad histriónico (Grupo F)',tp_paranoide:'Trastorno de personalidad paranoide (Grupo F)',tp_antisocial:'Trastorno de personalidad antisocial (Grupo F)',tp_mixto:'Trastorno mixto de la personalidad (Grupo F)',cambio_personalidad:'Cambio de personalidad (Grupo F)',tp_otro:'Trastorno de personalidad, otro (Grupo F)',rm_leve:'Trastorno del desarrollo intelectual leve, CI 50-70 (Grupo G, Clase I)',rm_moderado:'Trastorno del desarrollo intelectual moderado, CI 35-49 (Grupo G, Clase II)',rm_grave:'Trastorno del desarrollo intelectual grave, CI < 35 (Grupo G, Clase III)',rm_profundo:'Trastorno del desarrollo intelectual profundo, CI < 20 (Grupo G, Clase IV)',tea_asperger:'Trastorno del espectro autista – Síndrome de Asperger, Clase I (Grupo G)',tea_moderado:'Trastorno del espectro autista – Clase II (Grupo G)',tea_importante:'Trastorno del espectro autista – Clase III (Grupo G)',tea_severo:'Trastorno del espectro autista – Clase IV (Grupo G)',tea_muy_severo:'Trastorno del espectro autista – Clase V (Grupo G)'};
+const RAZONES_DEF=[{id:'r1',label:'Tratamiento psicofarmacológico insuficiente u optimizable, aún accesible'},{id:'r2',label:'Sin controles formales de especialidad psiquiátrica'},{id:'r3',label:'No completa el período mínimo de 12 meses de tratamiento con adherencia adecuada'},{id:'r4',label:'Sin psicoterapia estructurada pese a estar indicada y ser accesible'},{id:'r5',label:'Evolución no estabilizada; tratamientos accesibles no agotados que podrían revertir o mejorar el cuadro'},{id:'r6',label:'Remisión total o parcial relevante de los síntomas con el tratamiento actual'},{id:'r7',label:'Sin estudios / exámenes complementarios requeridos para objetivar el impedimento'},{id:'r8',label:'Impedimento recurrente o persistente sin segunda opinión especialista concordante'}];
+
+let diagCount=0;
+
+function init(){
+  buildRazones();addDiag();
+  const saved=localStorage.getItem('or_key_pericial');
+  if(saved) document.getElementById('apiKey').value=saved;
+}
+
+function toggleKey(){const i=document.getElementById('apiKey');i.type=i.type==='password'?'text':'password';}
+
+function addDiag(){
+  const n=++diagCount;
+  const item=document.createElement('div');
+  item.className='diag-card';item.id=`diag_${n}`;
+  item.innerHTML=`
+    <div class="diag-card-head">
+      <span class="diag-num">IMP. ${n}</span>
+      <button class="diag-remove" onclick="removeDiag(${n})">✕ Quitar</button>
+    </div>
+    <div class="row2" style="margin-bottom:8px">
+      <div class="field"><label>Grupo diagnóstico (CIE-10)</label>
+        <select id="g_${n}" onchange="onGrupoChange(${n})">
+          <option value="">— Seleccionar grupo —</option>
+          ${GRUPOS.map(g=>`<option value="${g.val}">${g.label}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Diagnóstico específico</label>
+        <select id="d_${n}"><option value="">— Primero selecciona grupo —</option></select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Clase de menoscabo propuesta</label>
+        <select id="c_${n}" onchange="updateNorm(${n})">
+          <option value="">— Clase —</option>
+          ${['I','II','III','IV','V'].map(c=>`<option value="${c}">Clase ${c}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>¿Se configura este impedimento?</label>
+        <select id="cfg_${n}">
+          <option value="no">No configurado</option>
+          <option value="si">Configurado</option>
+        </select>
+      </div>
+    </div>
+    <div class="norm-hint" id="norm_${n}"></div>`;
+  document.getElementById('diagList').appendChild(item);
+}
+
+function removeDiag(n){const el=document.getElementById(`diag_${n}`);if(el)el.remove();renumerar();}
+function renumerar(){document.querySelectorAll('.diag-card').forEach((el,i)=>{const b=el.querySelector('.diag-num');if(b)b.textContent=`IMP. ${i+1}`;});}
+
+function onGrupoChange(n){
+  const g=document.getElementById(`g_${n}`).value;
+  const sel=document.getElementById(`d_${n}`);
+  sel.innerHTML='<option value="">— Seleccionar diagnóstico —</option>';
+  if(g&&DIAGS[g])DIAGS[g].forEach(d=>{const o=document.createElement('option');o.value=d.v;o.textContent=d.l;sel.appendChild(o);});
+  updateNorm(n);
+}
+
+function updateNorm(n){
+  const g=(document.getElementById(`g_${n}`)||{}).value;
+  const c=(document.getElementById(`c_${n}`)||{}).value;
+  const hint=document.getElementById(`norm_${n}`);
+  if(!hint)return;
+  if(!g||!c||!NORMAS[g]||!NORMAS[g][c]){hint.classList.remove('on');return;}
+  const nr=NORMAS[g][c];
+  hint.innerHTML=`<strong>Clase ${c} – Menoscabo ${nr.r}:</strong> ${nr.c}`;
+  hint.classList.add('on');
+}
+
+function buildRazones(){
+  const grid=document.getElementById('razonesGrid');
+  RAZONES_DEF.forEach(r=>{
+    const lbl=document.createElement('label');lbl.className='razon-chip';lbl.htmlFor=r.id;
+    const cb=document.createElement('input');cb.type='checkbox';cb.id=r.id;cb.value=r.id;
+    cb.onchange=()=>lbl.classList.toggle('sel',cb.checked);
+    lbl.appendChild(cb);lbl.appendChild(document.createTextNode(r.label));
+    grid.appendChild(lbl);
+  });
+}
+
+function getDiags(){
+  return Array.from(document.querySelectorAll('.diag-card')).map(el=>{
+    const id=el.id.replace('diag_','');
+    return{grupo:(document.getElementById(`g_${id}`)||{}).value||'',diag:(document.getElementById(`d_${id}`)||{}).value||'',clase:(document.getElementById(`c_${id}`)||{}).value||'',cfg:(document.getElementById(`cfg_${id}`)||{}).value||'no'};
+  });
+}
+
+function getRazones(){return RAZONES_DEF.filter(r=>{const cb=document.getElementById(r.id);return cb&&cb.checked;}).map(r=>r.label);}
+
+async function generar(){
+  const apiKey=document.getElementById('apiKey').value.trim();
+  if(!apiKey){mostrarError('Ingresa tu API key de OpenRouter en el panel izquierdo.');return;}
+
+  const nombre=document.getElementById('nombre').value.trim();
+  const expediente=document.getElementById('expediente').value.trim();
+  const edad=document.getElementById('edad').value.trim();
+  const sexo=document.getElementById('sexo').value;
+  const comision=document.getElementById('comision').value.trim();
+  const modalidad=document.getElementById('modalidad').value;
+  const notas=document.getElementById('notas').value.trim();
+  const diags=getDiags();
+  const razones=getRazones();
+
+  if(diags.length===0){mostrarError('Agrega al menos un diagnóstico.');return;}
+  if(diags.find(d=>!d.grupo||!d.diag)){mostrarError('Completa grupo y diagnóstico en todos los impedimentos.');return;}
+  if(!notas){mostrarError('Ingresa las notas clínicas de la consulta.');return;}
+  mostrarError('');
+
+  localStorage.setItem('or_key_pericial',apiKey);
+
+  const btn=document.getElementById('genBtn');
+  btn.disabled=true;btn.innerHTML='<span class="spinning">⟳</span> Generando examen mental…';
+
+  const diagsStr=diags.map((d,i)=>{
+    const label=DIAG_LABELS[d.diag]||d.diag;
+    const normaGrp=NORMAS[d.grupo];
+    const norma=normaGrp&&d.clase?normaGrp[d.clase]:null;
+    const normaDesc=norma?`Clase ${d.clase} (Menoscabo ${norma.r}): ${norma.c}`:d.clase?`Clase ${d.clase}`:'clase no especificada';
+    return`  ${i+1}. ${label}\n     Clase propuesta: ${normaDesc}\n     ESTADO DEFINIDO POR EL PERITO: ${d.cfg==='si'?'SÍ SE CONFIGURA (impedimento validado, debe otorgarse)':'NO SE CONFIGURA (impedimento rechazado)'}`;
+  }).join('\n');
+
+  // Instrucción de configuración inequívoca según lo marcado por el perito
+  const hayConfigurados=diags.some(d=>d.cfg==='si');
+  const hayNoConfigurados=diags.some(d=>d.cfg==='no');
+  let instruccionConfig='';
+  const requisitosConfig='Según las Normas Técnicas de Invalidez, 9ª edición (2026, vigentes desde el 01.08.2026), un impedimento mental está CONFIGURADO cuando cumple copulativamente: (1) es objetivable según conocimientos médicos validados; (2) es demostrable por medios clínicos, de laboratorio o pruebas funcionales; (3) las terapias médicas accesibles están efectuadas o no revertirán el impedimento según la evidencia; (4) la evolución se ha estabilizado o está en agravación, sin tratamientos accesibles en el estado del arte que la reviertan; (5) están cumplidos los períodos de observación clínica (mínimo 12 meses de tratamiento con adherencia adecuada), salvo que el curso sea objetivamente irreversible e inexorable y sin tratamiento conocido, caso en el cual no se exige período de observación. La coexistencia de dos o más trastornos mentales NO da lugar a suma combinada de menoscabos, salvo que se acredite potenciación mutua entre ellos.';
+  const conceptoNoConfig='CONCEPTO CLAVE: que un impedimento NO SE CONFIGURE no significa que el diagnóstico esté ausente o se descarte. El diagnóstico SÍ ESTÁ PRESENTE clínicamente (debes afirmarlo y fundamentarlo psicopatológicamente), pero NO SE CONFIGURA porque no cumple alguno de los 5 requisitos normativos señalados arriba (tratamiento insuficiente u optimizable, período de observación de 12 meses incompleto, falta de controles de especialidad, falta de psicoterapia, remisión total o parcial relevante, etc.). La redacción correcta es del tipo: "presenta un cuadro compatible con X... sin embargo, el impedimento no se configura por...". NUNCA redactes como si el diagnóstico no existiera o se descartara.';
+  if(hayConfigurados&&!hayNoConfigurados){
+    instruccionConfig=requisitosConfig+' TODOS los impedimentos SE CONFIGURAN y SE VALIDAN. La conclusión DEBE validar el cuadro, fundamentar explícitamente el cumplimiento de los 5 requisitos (objetivabilidad, demostrabilidad, agotamiento o inutilidad de tratamientos accesibles, evolución estabilizada o en agravación irreversible, período de observación cumplido o exención por irreversibilidad) y respaldar el otorgamiento. NO uses la frase "no se configura". El cierre "En resumen:" debe señalar que el cuadro SE CONFIGURA. '+(diags.length>1?'Al haber más de un impedimento, NO los analices por separado como compartimentos: evalúalos EN CONJUNTO, describiendo cómo interactúan entre sí (cómo uno modula, exacerba o se superpone al otro), y fundamenta si corresponde suma combinada según potenciación mutua acreditada, sin incurrir en doble ponderación.':'');
+  }else if(hayNoConfigurados&&!hayConfigurados){
+    instruccionConfig=requisitosConfig+' '+conceptoNoConfig+' El cierre "En resumen:" debe afirmar el o los diagnósticos presentes y señalar cuál(es) de los 5 requisitos normativos no se cumple(n) para cada uno. '+(diags.length>1?'Al haber más de un impedimento, analízalos EN CONJUNTO: describe cómo interactúan y se relacionan entre sí (por ejemplo, cómo la estructura de personalidad genera o exacerba el cuadro reactivo, o cómo se superponen), y argumenta la no configuración desde esa comprensión integrada, no diagnóstico por diagnóstico en compartimentos separados.':'');
+  }else{
+    instruccionConfig=requisitosConfig+' '+conceptoNoConfig+' ATENCIÓN: hay impedimentos que SÍ se configuran y otros que NO. Respeta EXACTAMENTE el estado definido por el perito para cada uno. Analiza los diagnósticos EN CONJUNTO describiendo cómo interactúan entre sí, y dentro de ese análisis integrado fundamenta cuál cumple los 5 requisitos normativos (se configura) y cuál no los cumple (está presente pero no se configura). El cierre debe distinguir claramente el estado de cada uno.';
+  }
+
+  const razonesStr=razones.length>0?razones.map((r,i)=>`  ${i+1}. ${r}`).join('\n'):'  (no aplica – todos los impedimentos se configuran)';
+
+  const contextoComun=`DATOS DEL CASO:
+- Nombre: ${nombre||'no especificado'}
+- N° expediente: ${expediente||'no especificado'}
+- Edad: ${edad||'no especificada'}, sexo ${sexo}
+- Comisión médica: ${comision||'no especificada'}
+- Modalidad de evaluación: ${modalidad}
+
+IMPEDIMENTOS IDENTIFICADOS:
+${diagsStr}
+
+RAZONES DE NO CONFIGURACIÓN (aplican a los impedimentos no configurados):
+${razonesStr}
+
+NOTAS CLÍNICAS DE LA CONSULTA:
+${notas}`;
+
+  const promptExamen=`Eres el Dr. Nicolás Martínez Roberts, psiquiatra de adultos, interconsultor de la Superintendencia de Pensiones de Chile, con formación en psicopatología descriptiva clásica (Jaspers, Schneider, Capponi).
+
+${contextoComun}
+
+TAREA: Redacta ÚNICAMENTE el EXAMEN MENTAL del o la paciente. Tu respuesta debe COMENZAR DIRECTAMENTE con la primera frase descriptiva del examen (ej: "Paciente de sexo femenino que representa su edad cronológica..."). NO escribas conclusiones, ni diagnósticos formales, ni encabezados, ni títulos, ni repitas estas instrucciones.
+
+REGLAS DE REDACCIÓN:
+- Prosa clínica continua en tercera persona, sin bullet points, sin listas, sin subtítulos.
+- 5 a 7 párrafos, amplio y descriptivo. Cada hallazgo debe estar fundado en las notas clínicas entregadas; NO inventes síntomas que contradigan las notas, pero SÍ desarrolla y elabora fenomenológicamente cada hallazgo presente.
+- Estructura descriptiva completa y detallada: (1) presentación y aspecto general: constitución somática, vestimenta, arreglo e higiene personal, representación etaria, rasgos llamativos; (2) psicomotilidad y conducta durante la entrevista por ${modalidad}: marcha si es observable, distancia social, actitud (cooperadora, oposicionista, suspicaz, quejumbrosa), tensión psíquica, gestualidad; (3) lenguaje: prosodia, tono, velocidad, vocabulario, intención comunicativa, estilo del relato (notificativo, escueto, centrado en síntomas vs situaciones, capacidad de distinguir lo esencial de lo accesorio); (4) afectividad: modulación y resonancia afectiva, concordancia con el relato, presencia de irritabilidad, labilidad, extremosidad, victimización, heteroculpa, angustia, según las notas; (5) pensamiento: curso (velocidad, organización, coherencia), contenido (foco del relato, ideas sobrevaloradas o delirantes, su estructura y grado de sistematización), y elaboración psíquica; (6) sensopercepción: presencia o ausencia de alucinaciones y su categoría fenomenológica; (7) suicidalidad: ideación, estructuración, planificación o antecedentes según las notas, con su cualidad (fantaseada, coercitiva, estructurada); (8) conciencia, orientación, atención y memoria cuando sea pertinente; (9) propósito vital, insight y conciencia de enfermedad.
+- Usa lenguaje psicopatológico técnico y preciso (puedes usar conceptos como resonancia afectiva, sintonización, vivenciar, temple, tensión psíquica cuando corresponda). EVITA repetir la misma idea con distintas palabras. EVITA frases de relleno.
+- No uses la palabra "paciente" más de lo necesario; varía con "se observa", "presenta", "refiere", "impresiona".
+- Termina el examen mental de forma natural, sin resumen ni cierre valorativo.`;
+
+  const outArea=document.getElementById('outputArea');
+  const outEx=document.getElementById('outExamen');
+  const outCo=document.getElementById('outConclusiones');
+  const tagsOut=document.getElementById('tagsOut');
+
+  outArea.classList.add('visible');
+  outEx.textContent='';outCo.textContent='';
+  outEx.classList.add('streaming');outCo.classList.add('streaming');
+  tagsOut.innerHTML=diags.map(d=>{
+    const label=(DIAG_LABELS[d.diag]||d.diag).replace(/\s*\(Grupo.*\)/,'');
+    return`<span class="tag ${d.cfg==='si'?'cfg':'nocfg'}">${label} – ${d.cfg==='si'?'Configurado':'No configurado'}</span>`;
+  }).join('');
+  window.__truncated=null;
+  outArea.scrollIntoView({behavior:'smooth',block:'start'});
+
+  try{
+    // LLAMADA 1: EXAMEN MENTAL
+    const examenTexto=await llamarModelo(apiKey,promptExamen,outEx);
+    outEx.classList.remove('streaming');
+
+    // LLAMADA 2: CONCLUSIONES (usa el examen mental ya generado como insumo)
+    btn.innerHTML='<span class="spinning">⟳</span> Generando conclusiones…';
+
+    const promptConclusiones=`Eres el Dr. Nicolás Martínez Roberts, psiquiatra de adultos, interconsultor de la Superintendencia de Pensiones de Chile, con formación en psicopatología descriptiva clásica.
+
+${contextoComun}
+
+EXAMEN MENTAL YA REDACTADO (úsalo como base, no lo repitas literalmente):
+${examenTexto}
+
+TAREA: Redacta ÚNICAMENTE las CONCLUSIONES Y COMENTARIO DEL MÉDICO INTERCONSULTOR. No repitas el examen mental.
+
+ESTRUCTURA OBLIGATORIA (prosa continua, sin bullet points, sin subtítulos numerados):
+1. Apertura breve señalando quién acude y en qué condición (ej: "Usuaria periciada sola", "en compañía de…").
+2. SÍNTESIS PSICOPATOLÓGICA: caracteriza el cuadro desde la psicopatología descriptiva. Distingue lo estructural (personalidad, neurodesarrollo, deterioro orgánico) de lo reactivo o sintomático. Argumenta por qué el cuadro corresponde al grupo diagnóstico señalado.
+3. DESCARTE DE DIFERENCIALES: descarta explícitamente los diagnósticos diferenciales pertinentes. Por ejemplo, si es Grupo F (personalidad), fundamenta por qué NO se trata de un cuadro depresivo endógeno ni psicótico (ausencia de ritmicidad, ausencia de atemporalidad vivencial, ausencia de anhedonia vital, etc.). Si es Grupo C, fundamenta con síntomas de Bleuler/Schneider. Si es Grupo G, describe la alteración del neurodesarrollo.
+4. ANÁLISIS TERAPÉUTICO: evalúa si el tratamiento actual es suficiente u optimizable, y por qué.
+5. CONFIGURACIÓN — INSTRUCCIÓN CRÍTICA: ${instruccionConfig} ${hayNoConfigurados&&razones.length>0?'Razones de no configuración a usar para los impedimentos rechazados: '+razones.join('; ')+'.':''} Respeta SIEMPRE el estado definido por el perito en la lista de impedimentos; NO inviertas la decisión.
+6. Cierre en un párrafo que comience exactamente con "En resumen:" sintetizando diagnóstico, configuración y fundamento principal.
+
+REGLAS:
+- Análisis psicopatológico PROFUNDO y NO repetitivo. Cada oración debe aportar algo nuevo. Prohibido reformular la misma idea.
+- Usa el estilo del Dr. Martínez Roberts: "impresiona", "a juicio de este evaluador", "se comprende desde", según corresponda. Para cuadros que NO se configuran puedes usar expresiones como "cuadro crónico reactivo a conflictiva biográfica mal elaborada", "no se configura por". Para cuadros que SÍ se configuran usa expresiones como "se configura el cuadro", "cumple los requisitos para su configuración", "cuadro de carácter permanente e irreversible". Elige según el estado real de cada impedimento.
+- Integra la psicopatología con la lógica normativa de pensiones.`;
+
+    const conclusionesTexto=await llamarModelo(apiKey,promptConclusiones,outCo);
+    outCo.classList.remove('streaming');
+
+  }catch(err){
+    mostrarError(`Error: ${err.message}. Verifica tu API key e intenta de nuevo.`);
+    outEx.classList.remove('streaming');outCo.classList.remove('streaming');
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='✦ Generar examen mental y conclusiones';
+  }
+}
+
+async function llamarModelo(apiKey,prompt,outEl){
+  const MAX_INTENTOS=3;
+  for(let intento=1;intento<=MAX_INTENTOS;intento++){
+    try{
+      const texto=await streamModelo(apiKey,prompt,outEl);
+      if(esSalidaValida(texto)){
+        return texto;
+      }
+      // Salida inválida: limpiar y reintentar
+      outEl.textContent='';
+      if(intento<MAX_INTENTOS){
+        outEl.textContent=`(Reintentando generación, intento ${intento+1} de ${MAX_INTENTOS}…)`;
+        await new Promise(r=>setTimeout(r,1200));
+        outEl.textContent='';
+      }
+    }catch(e){
+      if(intento>=MAX_INTENTOS)throw e;
+      await new Promise(r=>setTimeout(r,1500));
+    }
+  }
+  throw new Error('El modelo no generó una respuesta válida tras varios intentos. Intenta de nuevo en unos segundos.');
+}
+
+function esSalidaValida(texto){
+  if(!texto||texto.trim().length<400)return false;
+  // Detectar filtración de comandos/instrucciones del prompt
+  const marcadores=['TAREA:','REGLAS DE REDACCIÓN','INSTRUCCIONES:','ESTRUCTURA OBLIGATORIA','CONCEPTO CLAVE:','DATOS DEL CASO:','IMPEDIMENTOS IDENTIFICADOS','---EXAMEN','---CONCLU','INSTRUCCIÓN CRÍTICA'];
+  for(const m of marcadores){
+    if(texto.includes(m))return false;
+  }
+  return true;
+}
+
+async function streamModelo(apiKey,prompt,outEl){
+  const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':`Bearer ${apiKey}`,
+      'HTTP-Referer':'https://niconaish.github.io',
+      'X-Title':'Informe Pericial Psiquiatrico'
+    },
+    body:JSON.stringify({
+      model:'meta-llama/llama-3.3-70b-instruct:free',
+      models:['meta-llama/llama-3.3-70b-instruct:free','deepseek/deepseek-r1:free','openrouter/free'],
+      stream:true,
+      max_tokens:5000,
+      temperature:0.5,
+      messages:[{role:'user',content:prompt}]
+    })
+  });
+
+  if(!res.ok){
+    const err=await res.json().catch(()=>({}));
+    throw new Error(err?.error?.message||`Error HTTP ${res.status}`);
+  }
+
+  const reader=res.body.getReader();
+  const decoder=new TextDecoder();
+  let buffer='',fullText='';
+
+  while(true){
+    const{done,value}=await reader.read();
+    if(done)break;
+    buffer+=decoder.decode(value,{stream:true});
+    const lines=buffer.split('\n');
+    buffer=lines.pop();
+    for(const line of lines){
+      if(!line.startsWith('data: '))continue;
+      const data=line.slice(6).trim();
+      if(data==='[DONE]')break;
+      try{
+        const json=JSON.parse(data);
+        const chunk=json?.choices?.[0]?.delta?.content||'';
+        if(chunk){
+          fullText+=chunk;
+          const limpio=limpiarSalida(fullText);
+          outEl.textContent=limpio;
+        }
+      }catch(e){}
+    }
+  }
+  return limpiarSalida(fullText);
+}
+
+function limpiarSalida(texto){
+  let t=texto.replace(/<pad>/g,'').replace(/<\/?s>/g,'');
+  // Quitar encabezados que el modelo a veces agrega al inicio
+  t=t.replace(/^\s*(EXAMEN MENTAL:?|CONCLUSIONES( Y COMENTARIO.*?)?:?|\*\*EXAMEN MENTAL\*\*:?|\*\*CONCLUSIONES\*\*:?)\s*/i,'');
+  // Quitar markdown de negritas y títulos
+  t=t.replace(/^#+\s+/gm,'');
+  return t.trim();
+}
+
+function extraer(texto,inicio,fin){
+  const i=texto.indexOf(inicio);if(i===-1)return null;
+  const desde=i+inicio.length;
+  if(fin){const j=texto.indexOf(fin,desde);return j===-1?texto.slice(desde):texto.slice(desde,j);}
+  return texto.slice(desde);
+}
+
+function mostrarError(msg){const el=document.getElementById('errMsg');el.style.display=msg?'block':'none';el.textContent=msg;}
+
+async function copiar(id,btnId){
+  await navigator.clipboard.writeText(document.getElementById(id).textContent);
+  const btn=document.getElementById(btnId);
+  btn.textContent='✓ Copiado';btn.classList.add('done');
+  setTimeout(()=>{btn.innerHTML='⎘ Copiar texto';btn.classList.remove('done');},2000);
+}
+
+init();
+</script>
+</body>
+</html>
